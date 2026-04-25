@@ -1,0 +1,10 @@
+{
+  "name": "@314/web-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "implicitDependencies": [
+      "@314/web"
+    ]
+  }
+}
