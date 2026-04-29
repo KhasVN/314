@@ -1,1 +1,1 @@
-export class CreateEmployerDto {}
+export type { CreateEmployerDto } from '@talent-matching/dtos';

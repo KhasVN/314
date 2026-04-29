@@ -1,26 +1,72 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
+import { employerProfiles } from '../../db/domain-schema';
+import { DatabaseService } from '../database/database.service';
 import { CreateEmployerDto } from './dto/create-employer.dto';
 import { UpdateEmployerDto } from './dto/update-employer.dto';
 
 @Injectable()
 export class EmployersService {
-  create(createEmployerDto: CreateEmployerDto) {
-    return 'This action adds a new employer';
+  constructor(private readonly database: DatabaseService) {}
+
+  async create(createEmployerDto: CreateEmployerDto) {
+    const [employer] = await this.database.db
+      .insert(employerProfiles)
+      .values({
+        id: randomUUID(),
+        userId: createEmployerDto.userId,
+        companyName: createEmployerDto.companyName,
+        companyInfo: createEmployerDto.companyInfo,
+        contactInfo: createEmployerDto.contactInfo,
+      })
+      .returning();
+
+    return employer;
   }
 
   findAll() {
-    return `This action returns all employers`;
+    return this.database.db.select().from(employerProfiles);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} employer`;
+  async findOne(id: string) {
+    const [employer] = await this.database.db
+      .select()
+      .from(employerProfiles)
+      .where(eq(employerProfiles.id, id))
+      .limit(1);
+
+    if (!employer) {
+      throw new NotFoundException('Employer not found');
+    }
+
+    return employer;
   }
 
-  update(id: number, updateEmployerDto: UpdateEmployerDto) {
-    return `This action updates a #${id} employer`;
+  async update(id: string, updateEmployerDto: UpdateEmployerDto) {
+    const [employer] = await this.database.db
+      .update(employerProfiles)
+      .set(updateEmployerDto)
+      .where(eq(employerProfiles.id, id))
+      .returning();
+
+    if (!employer) {
+      throw new NotFoundException('Employer not found');
+    }
+
+    return employer;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} employer`;
+  async remove(id: string) {
+    const [employer] = await this.database.db
+      .delete(employerProfiles)
+      .where(eq(employerProfiles.id, id))
+      .returning();
+
+    if (!employer) {
+      throw new NotFoundException('Employer not found');
+    }
+
+    return employer;
   }
 }
