@@ -42,6 +42,10 @@ export function SearchPanel({
   const [query, setQuery] = useState('marketing');
   const [relatedId, setRelatedId] = useState('');
   const [rerank, setRerank] = useState(false);
+  const [submittedJobParams, setSubmittedJobParams] =
+    useState<JobSearchQueryDto | null>(null);
+  const [submittedCandidateParams, setSubmittedCandidateParams] =
+    useState<CandidateSearchQueryDto | null>(null);
 
   const [jobFilters, setJobFilters] = useState({
     workMode: '',
@@ -93,17 +97,21 @@ export function SearchPanel({
   );
 
   const jobResults = useSWR(
-    mode === 'jobs' ? ['job-search', jobParams] : null,
-    () => talentApi.jobs.search(jobParams),
+    mode === 'jobs' && submittedJobParams
+      ? ['job-search', submittedJobParams]
+      : null,
+    () => talentApi.jobs.search(submittedJobParams!),
     {
       keepPreviousData: true,
-      revalidateOnMount: true,
+      revalidateOnMount: false,
     },
   );
   const candidateResults = useSWR(
-    mode === 'candidates' ? ['candidate-search', candidateParams] : null,
-    () => talentApi.candidates.search(candidateParams),
-    { keepPreviousData: true, revalidateOnMount: true },
+    mode === 'candidates' && submittedCandidateParams
+      ? ['candidate-search', submittedCandidateParams]
+      : null,
+    () => talentApi.candidates.search(submittedCandidateParams!),
+    { keepPreviousData: true, revalidateOnMount: false },
   );
 
   const isLoading =
@@ -121,6 +129,17 @@ export function SearchPanel({
     } else {
       setSelectedCandidate(item);
       setSelectedJob(null);
+    }
+  };
+
+  const handleSearch = () => {
+    setSelectedJob(null);
+    setSelectedCandidate(null);
+
+    if (mode === 'jobs') {
+      setSubmittedJobParams({ ...jobParams });
+    } else {
+      setSubmittedCandidateParams({ ...candidateParams });
     }
   };
 
@@ -152,11 +171,7 @@ export function SearchPanel({
             </select>
             <button
               className="btn btn-square btn-lg bg-primary text-primary-content hover:bg-accent hover:text-primary border-0 rounded-none"
-              onClick={() =>
-                mode === 'jobs'
-                  ? jobResults.mutate()
-                  : candidateResults.mutate()
-              }
+              onClick={handleSearch}
             >
               <ArrowIcon className="size-8" />
             </button>
