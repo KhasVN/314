@@ -22,13 +22,19 @@ export function TalentDashboard() {
   return (
     <AppFrame activeTab={activeTab} onTabChange={setActiveTab}>
       {activeTab === 'search' && (
-        <SearchPanel candidates={candidates.data ?? []} jobs={jobs.data ?? []} />
+        <SearchPanel
+          candidates={candidates.data ?? []}
+          jobs={jobs.data ?? []}
+        />
       )}
       {activeTab === 'employers' && <EmployersPanel />}
       {activeTab === 'candidates' && <CandidatesPanel />}
       {activeTab === 'jobs' && <JobsPanel employers={employers.data ?? []} />}
       {activeTab === 'applications' && (
-        <ApplicationsPanel candidates={candidates.data ?? []} jobs={jobs.data ?? []} />
+        <ApplicationsPanel
+          candidates={candidates.data ?? []}
+          jobs={jobs.data ?? []}
+        />
       )}
       {activeTab === 'auth' && <AuthPanel />}
     </AppFrame>

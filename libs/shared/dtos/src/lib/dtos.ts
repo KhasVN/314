@@ -29,6 +29,7 @@ export const createEmployerSchema = z.object({
   companyName: z.string().min(1),
   companyInfo: z.string().optional(),
   contactInfo: z.string().optional(),
+  isMember: z.boolean().optional(),
 });
 
 export const employerSchema = createEmployerSchema.extend({
@@ -42,7 +43,12 @@ export const createJobSchema = z.object({
   companyInfo: z.string().optional(),
   requiredEducation: educationLevelSchema.optional().nullable(),
   requiredSkills: z.string().optional().nullable(),
-  requiredYearsOfExperience: z.number().int().nonnegative().optional().nullable(),
+  requiredYearsOfExperience: z
+    .number()
+    .int()
+    .nonnegative()
+    .optional()
+    .nullable(),
   workMode: workModeSchema.optional().nullable(),
   location: z.string().optional().nullable(),
   status: jobStatusSchema.optional(),
@@ -63,7 +69,11 @@ export const createCandidateSchema = z.object({
   major: z.string().optional().nullable(),
   yearsOfExperience: z.number().int().nonnegative().optional().nullable(),
   skills: z.string().optional().nullable(),
+  workExperience: z.string().optional().nullable(),
+  preferredLocations: z.string().optional().nullable(),
+  preferredWorkMode: workModeSchema.optional().nullable(),
   resumeText: z.string().optional().nullable(),
+  isMember: z.boolean().optional(),
 });
 
 export const candidateSchema = createCandidateSchema.extend({
@@ -100,6 +110,7 @@ export const candidateSearchQuerySchema = z.object({
   jobId: z.string().optional(),
   education: educationLevelSchema.optional(),
   location: z.string().optional(),
+  workMode: workModeSchema.optional(),
   minYearsOfExperience: z.coerce.number().int().nonnegative().optional(),
   limit: z.coerce.number().int().positive().optional(),
   rerank: z.coerce.boolean().optional(),
@@ -122,4 +133,6 @@ export type CreateApplicationDto = z.infer<typeof createApplicationSchema>;
 export type ApplicationDto = z.infer<typeof applicationSchema>;
 export type UpdateApplicationDto = Partial<CreateApplicationDto>;
 export type JobSearchQueryDto = z.infer<typeof jobSearchQuerySchema>;
-export type CandidateSearchQueryDto = z.infer<typeof candidateSearchQuerySchema>;
+export type CandidateSearchQueryDto = z.infer<
+  typeof candidateSearchQuerySchema
+>;

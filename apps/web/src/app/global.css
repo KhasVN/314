@@ -133,15 +133,36 @@
   }
 
   .editor-panel, .table-panel {
-    @apply border-t border-primary pt-6 grid gap-4;
+    @apply border-t border-primary pt-6 grid gap-4 min-w-0;
   }
 
   .table-panel {
     @apply content-start;
   }
 
+  .table-panel > .overflow-x-auto {
+    @apply w-full overflow-auto;
+    max-height: calc(100vh - 19rem);
+  }
+
+  .table-panel table {
+    @apply min-w-full;
+  }
+
+  .table-panel thead {
+    @apply sticky top-0 z-10 bg-base-100;
+  }
+
   .editor-panel form {
     @apply grid gap-4;
+  }
+
+  @media (min-width: 1021px) {
+    .editor-panel {
+      @apply sticky overflow-y-auto pr-2;
+      top: 2rem;
+      max-height: calc(100vh - 4rem);
+    }
   }
 
   /* Auth */

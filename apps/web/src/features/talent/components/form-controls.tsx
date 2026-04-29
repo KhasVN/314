@@ -13,7 +13,9 @@ export function TextInput({
 }) {
   return (
     <label className="form-control">
-      <span className="label-text text-xs uppercase text-primary/50 mb-1">{label}</span>
+      <span className="label-text text-xs uppercase text-primary/50 mb-1">
+        {label}
+      </span>
       <input
         type={type}
         value={value}
@@ -35,12 +37,38 @@ export function TextArea({
 }) {
   return (
     <label className="form-control">
-      <span className="label-text text-xs uppercase text-primary/50 mb-1">{label}</span>
+      <span className="label-text text-xs uppercase text-primary/50 mb-1">
+        {label}
+      </span>
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="textarea textarea-bordered rounded-none bg-base-100 min-h-[8rem]"
       />
+    </label>
+  );
+}
+
+export function CheckboxInput({
+  checked,
+  label,
+  onChange,
+}: {
+  checked: boolean;
+  label: string;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="flex items-center gap-3 py-2">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="checkbox checkbox-sm rounded-none"
+      />
+      <span className="label-text text-xs uppercase text-primary/50">
+        {label}
+      </span>
     </label>
   );
 }
@@ -60,7 +88,9 @@ export function SelectInput({
 }) {
   return (
     <label className="form-control">
-      <span className="label-text text-xs uppercase text-primary/50 mb-1">{label}</span>
+      <span className="label-text text-xs uppercase text-primary/50 mb-1">
+        {label}
+      </span>
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -98,13 +128,25 @@ export function FormActions({
   );
 }
 
-export function RowActions({ onDelete, onEdit }: { onDelete: () => void; onEdit: () => void }) {
+export function RowActions({
+  onDelete,
+  onEdit,
+}: {
+  onDelete: () => void;
+  onEdit: () => void;
+}) {
   return (
     <div className="join">
-      <button className="btn btn-sm btn-ghost join-item rounded-none" onClick={onEdit}>
+      <button
+        className="btn btn-sm btn-ghost join-item rounded-none"
+        onClick={onEdit}
+      >
         Edit
       </button>
-      <button className="btn btn-sm btn-error join-item rounded-none" onClick={onDelete}>
+      <button
+        className="btn btn-sm btn-error join-item rounded-none"
+        onClick={onDelete}
+      >
         Delete
       </button>
     </div>
