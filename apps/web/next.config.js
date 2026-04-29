@@ -1,20 +1,18 @@
-//@ts-check
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { composePlugins, withNx } = require('@nx/next');
 
-/**
- * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
- **/
 const nextConfig = {
-  // Use this to set Nx-specific options
-  // See: https://nx.dev/recipes/next/next-config-setup
+  devIndicators: false,
   nx: {},
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': require('path').join(__dirname, 'src'),
+      '@components': require('path').join(__dirname, 'src/features/talent/components'),
+      '@lib': require('path').join(__dirname, 'src/lib'),
+      '@features': require('path').join(__dirname, 'src/features'),
+    };
+    return config;
+  },
 };
 
-const plugins = [
-  // Add more Next.js plugins to this list if needed.
-  withNx,
-];
-
-module.exports = composePlugins(...plugins)(nextConfig);
+module.exports = composePlugins(withNx)(nextConfig);
