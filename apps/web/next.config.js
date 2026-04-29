@@ -2,6 +2,7 @@ const { composePlugins, withNx } = require('@nx/next');
 
 const nextConfig = {
   devIndicators: false,
+  output: 'standalone',
   nx: {},
   webpack: (config) => {
     config.resolve.alias = {
