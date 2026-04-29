@@ -39,7 +39,7 @@ export function SearchPanel({
   jobs: JobDto[];
 }) {
   const [mode, setMode] = useState<'jobs' | 'candidates'>('jobs');
-  const [query, setQuery] = useState('marketing');
+  const [query, setQuery] = useState('');
   const [relatedId, setRelatedId] = useState('');
   const [rerank, setRerank] = useState(false);
   const [submittedJobParams, setSubmittedJobParams] =
