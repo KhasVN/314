@@ -123,6 +123,18 @@ export const jobPostings = pgTable(
       'gin',
       table.description.op('gin_trgm_ops'),
     ),
+    index('job_postings_title_trgm_idx').using(
+      'gin',
+      table.title.op('gin_trgm_ops'),
+    ),
+    index('job_postings_required_skills_trgm_idx').using(
+      'gin',
+      table.requiredSkills.op('gin_trgm_ops'),
+    ),
+    index('job_postings_location_trgm_idx').using(
+      'gin',
+      table.location.op('gin_trgm_ops'),
+    ),
     index('job_postings_search_text_trgm_idx').using(
       'gin',
       table.searchText.op('gin_trgm_ops'),

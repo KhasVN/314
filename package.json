@@ -7,7 +7,8 @@
     "build:web": "bun run --cwd apps/web build",
     "start:web": "bun run --cwd apps/web start",
     "dev:backend": "bunx nx serve backend",
-    "build:backend": "bunx nx build backend"
+    "build:backend": "bunx nx build backend",
+    "load:raw-data": "node scripts/load-raw-data.mjs"
   },
   "private": true,
   "dependencies": {

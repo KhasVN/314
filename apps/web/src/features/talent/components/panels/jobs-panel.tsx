@@ -92,21 +92,22 @@ export function JobsPanel({ employers }: { employers: EmployerDto[] }) {
             item.location ?? '',
             <RowActions
               key={item.id}
-              onEdit={() =>
+              onEdit={async () => {
+                const fullJob = await talentApi.jobs.get(item.id);
                 setForm({
-                  id: item.id,
-                  employerId: item.employerId,
-                  title: item.title,
-                  description: item.description,
-                  companyInfo: item.companyInfo ?? '',
-                  requiredEducation: item.requiredEducation ?? '',
-                  requiredSkills: item.requiredSkills ?? '',
-                  requiredYearsOfExperience: item.requiredYearsOfExperience?.toString() ?? '',
-                  workMode: item.workMode ?? '',
-                  location: item.location ?? '',
-                  status: item.status as JobDto['status'],
-                })
-              }
+                  id: fullJob.id,
+                  employerId: fullJob.employerId,
+                  title: fullJob.title,
+                  description: fullJob.description,
+                  companyInfo: fullJob.companyInfo ?? '',
+                  requiredEducation: fullJob.requiredEducation ?? '',
+                  requiredSkills: fullJob.requiredSkills ?? '',
+                  requiredYearsOfExperience: fullJob.requiredYearsOfExperience?.toString() ?? '',
+                  workMode: fullJob.workMode ?? '',
+                  location: fullJob.location ?? '',
+                  status: fullJob.status as JobDto['status'],
+                });
+              }}
               onDelete={async () => {
                 await talentApi.jobs.remove(item.id);
                 await mutate();

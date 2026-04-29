@@ -36,6 +36,7 @@ export const talentApi = {
   },
   jobs: {
     list: () => getJson<JobDto[]>('/jobs'),
+    get: (id: string) => getJson<JobDto>(`/jobs/${id}`),
     create: (data: CreateJobDto) => postJson<JobDto>('/jobs', data),
     update: (id: string, data: UpdateJobDto) => patchJson<JobDto>(`/jobs/${id}`, data),
     remove: (id: string) => deleteJson<JobDto>(`/jobs/${id}`),

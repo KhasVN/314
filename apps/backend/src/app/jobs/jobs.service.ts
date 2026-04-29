@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { jobPostings } from '../../db/domain-schema';
 import { AiService } from '../ai/ai.service';
@@ -47,7 +47,21 @@ export class JobsService {
   }
 
   findAll() {
-    return this.database.db.select().from(jobPostings);
+    return this.database.db
+      .select({
+        id: jobPostings.id,
+        employerId: jobPostings.employerId,
+        title: jobPostings.title,
+        description: sql<string>`''`,
+        companyInfo: jobPostings.companyInfo,
+        requiredEducation: jobPostings.requiredEducation,
+        requiredSkills: jobPostings.requiredSkills,
+        requiredYearsOfExperience: jobPostings.requiredYearsOfExperience,
+        workMode: jobPostings.workMode,
+        location: jobPostings.location,
+        status: jobPostings.status,
+      })
+      .from(jobPostings);
   }
 
   async findOne(id: string) {
@@ -116,7 +130,7 @@ export class JobsService {
       requiredEducation: query.requiredEducation as any,
       yearsOfExperience: this.optionalNumber(query.yearsOfExperience),
       limit: this.optionalNumber(query.limit),
-      rerank: query.rerank !== 'false',
+      rerank: query.rerank === 'true',
     });
   }
 

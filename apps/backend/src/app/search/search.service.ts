@@ -259,7 +259,7 @@ export class SearchService {
           ...this.jobFilters(input, education, yearsOfExperience, 'jp'),
           sql`jp.embedding IS NOT NULL`,
         ])}
-        ORDER BY jp.embedding <=> ${this.vector(vector)}::vector
+        ORDER BY jp.embedding <=> ${this.vector(vector)}::vector(1536)
         LIMIT ${limit}
       `);
 
@@ -605,4 +605,5 @@ export class SearchService {
       return [];
     }
   }
+
 }
