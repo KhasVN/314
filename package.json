@@ -2,7 +2,13 @@
   "name": "@talent-matching/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "dev:web": "bun run --cwd apps/web dev",
+    "build:web": "bun run --cwd apps/web build",
+    "start:web": "bun run --cwd apps/web start",
+    "dev:backend": "bunx nx serve backend",
+    "build:backend": "bunx nx build backend"
+  },
   "private": true,
   "dependencies": {
     "@nestjs/common": "^11.0.0",

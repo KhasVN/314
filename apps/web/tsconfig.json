@@ -10,29 +10,54 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@talent-matching/dtos": ["../../libs/shared/dtos/src/index.ts"],
-      "@/*": ["./src/*"],
-      "@components/*": ["./src/features/talent/components/*"],
-      "@lib/*": ["./src/lib/*"],
-      "@features/*": ["./src/features/*"]
+      "@talent-matching/dtos": [
+        "../../libs/shared/dtos/src/index.ts"
+      ],
+      "@/*": [
+        "./src/*"
+      ],
+      "@components/*": [
+        "./src/features/talent/components/*"
+      ],
+      "@lib/*": [
+        "./src/lib/*"
+      ],
+      "@features/*": [
+        "./src/features/*"
+      ]
     },
-    "plugins": [{ "name": "next" }]
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
     "**/*.js",
     "**/*.jsx",
+    "**/*.ts",
+    "**/*.tsx",
     "../../apps/web/.next/types/**/*.ts",
     "../../dist/apps/web/.next/types/**/*.ts",
-    "next-env.d.ts"
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "jest.config.ts", "jest.config.cts", "**/*.spec.ts", "**/*.test.ts"]
+  "exclude": [
+    "node_modules",
+    "jest.config.ts",
+    "jest.config.cts",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ]
 }

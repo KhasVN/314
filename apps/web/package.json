@@ -1,0 +1,9 @@
+{
+  "name": "@talent-matching/web",
+  "private": true,
+  "scripts": {
+    "dev": "bunx next dev",
+    "build": "bunx next build",
+    "start": "bunx next start"
+  }
+}
