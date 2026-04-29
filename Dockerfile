@@ -1,4 +1,4 @@
-FROM oven/bun:1 AS builder
+FROM oven/bun:1.3 AS builder
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ RUN bun install --frozen-lockfile
 COPY . .
 RUN bunx nx build backend --configuration=production
 
-FROM node:22-slim AS runner
+FROM node:25.9.0-bookworm AS runner
 
 WORKDIR /app
 ENV NODE_ENV=production
