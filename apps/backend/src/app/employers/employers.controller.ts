@@ -27,7 +27,7 @@ export class EmployersController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.employersService.findOne(+id);
+    return this.employersService.findOne(id);
   }
 
   @Patch(':id')
@@ -35,11 +35,11 @@ export class EmployersController {
     @Param('id') id: string,
     @Body() updateEmployerDto: UpdateEmployerDto,
   ) {
-    return this.employersService.update(+id, updateEmployerDto);
+    return this.employersService.update(id, updateEmployerDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.employersService.remove(+id);
+    return this.employersService.remove(id);
   }
 }

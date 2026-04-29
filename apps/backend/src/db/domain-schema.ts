@@ -111,12 +111,14 @@ export const jobPostings = pgTable(
     searchText: text('search_text'),
     bm25Description: text('bm25_description'),
     bm25Document: text('bm25_document'),
+    bm25Title: text('bm25_title'),
     embedding: vector('embedding', { dimensions: 1536 }),
   },
   (table) => [
     index('job_postings_employer_id_idx').on(table.employerId),
     uniqueIndex('job_postings_bm25_description_unique').on(table.bm25Description),
     uniqueIndex('job_postings_bm25_document_unique').on(table.bm25Document),
+    uniqueIndex('job_postings_bm25_title_unique').on(table.bm25Title),
     index('job_postings_description_trgm_idx').using(
       'gin',
       table.description.op('gin_trgm_ops'),

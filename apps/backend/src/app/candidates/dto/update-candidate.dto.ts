@@ -1,4 +1,1 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateCandidateDto } from './create-candidate.dto';
-
-export class UpdateCandidateDto extends PartialType(CreateCandidateDto) {}
+export type { UpdateCandidateDto } from '@talent-matching/dtos';

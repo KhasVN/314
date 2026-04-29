@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { CandidatesService } from './candidates.service';
 import { CreateCandidateDto } from './dto/create-candidate.dto';
@@ -25,9 +26,14 @@ export class CandidatesController {
     return this.candidatesService.findAll();
   }
 
+  @Get('search')
+  search(@Query() query: Record<string, string | undefined>) {
+    return this.candidatesService.search(query);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.candidatesService.findOne(+id);
+    return this.candidatesService.findOne(id);
   }
 
   @Patch(':id')
@@ -35,11 +41,11 @@ export class CandidatesController {
     @Param('id') id: string,
     @Body() updateCandidateDto: UpdateCandidateDto,
   ) {
-    return this.candidatesService.update(+id, updateCandidateDto);
+    return this.candidatesService.update(id, updateCandidateDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.candidatesService.remove(+id);
+    return this.candidatesService.remove(id);
   }
 }
