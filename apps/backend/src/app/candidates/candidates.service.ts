@@ -32,7 +32,11 @@ export class CandidatesService {
         major: createCandidateDto.major,
         yearsOfExperience: createCandidateDto.yearsOfExperience,
         skills: createCandidateDto.skills,
+        workExperience: createCandidateDto.workExperience,
+        preferredLocations: createCandidateDto.preferredLocations,
+        preferredWorkMode: createCandidateDto.preferredWorkMode,
         resumeText: createCandidateDto.resumeText,
+        isMember: createCandidateDto.isMember ?? false,
         searchText,
         embedding: embedding.length ? embedding : null,
       })
@@ -73,7 +77,11 @@ export class CandidatesService {
         major: next.major,
         yearsOfExperience: next.yearsOfExperience,
         skills: next.skills,
+        workExperience: next.workExperience,
+        preferredLocations: next.preferredLocations,
+        preferredWorkMode: next.preferredWorkMode,
         resumeText: next.resumeText,
+        isMember: next.isMember,
         searchText,
         embedding: embedding.length ? embedding : current.embedding,
       })
@@ -108,7 +116,18 @@ export class CandidatesService {
     });
   }
 
-  private toSearchText(candidate: CreateCandidateDto) {
+  private toSearchText(candidate: {
+    fullName?: string | null;
+    contactInfo?: string | null;
+    education?: string | null;
+    major?: string | null;
+    yearsOfExperience?: number | null;
+    skills?: string | null;
+    workExperience?: string | null;
+    preferredLocations?: string | null;
+    preferredWorkMode?: string | null;
+    resumeText?: string | null;
+  }) {
     return buildSearchText([
       candidate.fullName,
       candidate.contactInfo,
@@ -116,6 +135,9 @@ export class CandidatesService {
       candidate.major,
       candidate.yearsOfExperience,
       candidate.skills,
+      candidate.workExperience,
+      candidate.preferredLocations,
+      candidate.preferredWorkMode,
       candidate.resumeText,
     ]);
   }
