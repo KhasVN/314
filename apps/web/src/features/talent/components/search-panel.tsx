@@ -4,7 +4,7 @@ import type {
   JobDto,
   JobSearchQueryDto,
 } from '@talent-matching/dtos';
-import { useMemo, useState } from 'react';
+import { type FormEvent, useMemo, useState } from 'react';
 import useSWR from 'swr';
 import { talentApi } from '@features/talent/api';
 import {
@@ -132,7 +132,8 @@ export function SearchPanel({
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = (event?: FormEvent) => {
+    event?.preventDefault();
     setSelectedJob(null);
     setSelectedCandidate(null);
 
@@ -150,7 +151,7 @@ export function SearchPanel({
   return (
     <section className="search-surface">
       <div className="hero-block">
-        <div className="hero-search">
+        <form className="hero-search" onSubmit={handleSearch}>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -170,13 +171,13 @@ export function SearchPanel({
               ))}
             </select>
             <button
+              type="submit"
               className="btn btn-square btn-lg bg-primary text-primary-content hover:bg-accent hover:text-primary border-0 rounded-none"
-              onClick={handleSearch}
             >
               <ArrowIcon className="size-8" />
             </button>
           </div>
-        </div>
+        </form>
       </div>
 
       <div className="search-workspace">
