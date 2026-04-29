@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { candidateProfiles } from '../../db/domain-schema';
 import { AiService } from '../ai/ai.service';
-import { buildBm25Document, buildSearchText } from '../ai/search-text';
+import { buildSearchText } from '../ai/search-text';
 import { DatabaseService } from '../database/database.service';
 import { SearchService } from '../search/search.service';
 import { CreateCandidateDto } from './dto/create-candidate.dto';
@@ -34,12 +34,10 @@ export class CandidatesService {
         skills: createCandidateDto.skills,
         resumeText: createCandidateDto.resumeText,
         searchText,
-        bm25Document: buildBm25Document(id, searchText),
         embedding: embedding.length ? embedding : null,
       })
       .returning();
 
-    await this.searchService.rebuildCandidateIndexes();
     return candidate;
   }
 
@@ -77,13 +75,11 @@ export class CandidatesService {
         skills: next.skills,
         resumeText: next.resumeText,
         searchText,
-        bm25Document: buildBm25Document(id, searchText),
         embedding: embedding.length ? embedding : current.embedding,
       })
       .where(eq(candidateProfiles.id, id))
       .returning();
 
-    await this.searchService.rebuildCandidateIndexes();
     return candidate;
   }
 
@@ -97,7 +93,6 @@ export class CandidatesService {
       throw new NotFoundException('Candidate not found');
     }
 
-    await this.searchService.rebuildCandidateIndexes();
     return candidate;
   }
 

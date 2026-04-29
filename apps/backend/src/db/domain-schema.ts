@@ -20,17 +20,9 @@ export const educationLevel = pgEnum('education_level', [
   'other',
 ]);
 
-export const workMode = pgEnum('work_mode', [
-  'remote',
-  'on_site',
-  'hybrid',
-]);
+export const workMode = pgEnum('work_mode', ['remote', 'on_site', 'hybrid']);
 
-export const jobStatus = pgEnum('job_status', [
-  'draft',
-  'published',
-  'closed',
-]);
+export const jobStatus = pgEnum('job_status', ['draft', 'published', 'closed']);
 
 export const applicationStatus = pgEnum('application_status', [
   'submitted',
@@ -55,19 +47,13 @@ export const candidateProfiles = pgTable(
     skills: text('skills'),
     resumeText: text('resume_text'),
     searchText: text('search_text'),
-    bm25Document: text('bm25_document'),
     embedding: vector('embedding', { dimensions: 1536 }),
   },
   (table) => [
     uniqueIndex('candidate_profiles_user_id_unique').on(table.userId),
-    uniqueIndex('candidate_profiles_bm25_document_unique').on(table.bm25Document),
     index('candidate_profiles_search_text_trgm_idx').using(
       'gin',
       table.searchText.op('gin_trgm_ops'),
-    ),
-    index('candidate_profiles_bm25_document_trgm_idx').using(
-      'gin',
-      table.bm25Document.op('gin_trgm_ops'),
     ),
     index('candidate_profiles_embedding_hnsw_idx').using(
       'hnsw',
@@ -87,9 +73,7 @@ export const employerProfiles = pgTable(
     companyInfo: text('company_info'),
     contactInfo: text('contact_info'),
   },
-  (table) => [
-    uniqueIndex('employer_profiles_user_id_unique').on(table.userId),
-  ],
+  (table) => [uniqueIndex('employer_profiles_user_id_unique').on(table.userId)],
 );
 
 export const jobPostings = pgTable(
@@ -109,16 +93,10 @@ export const jobPostings = pgTable(
     location: text('location'),
     status: jobStatus('status').default('published').notNull(),
     searchText: text('search_text'),
-    bm25Description: text('bm25_description'),
-    bm25Document: text('bm25_document'),
-    bm25Title: text('bm25_title'),
     embedding: vector('embedding', { dimensions: 1536 }),
   },
   (table) => [
     index('job_postings_employer_id_idx').on(table.employerId),
-    uniqueIndex('job_postings_bm25_description_unique').on(table.bm25Description),
-    uniqueIndex('job_postings_bm25_document_unique').on(table.bm25Document),
-    uniqueIndex('job_postings_bm25_title_unique').on(table.bm25Title),
     index('job_postings_description_trgm_idx').using(
       'gin',
       table.description.op('gin_trgm_ops'),
@@ -138,14 +116,6 @@ export const jobPostings = pgTable(
     index('job_postings_search_text_trgm_idx').using(
       'gin',
       table.searchText.op('gin_trgm_ops'),
-    ),
-    index('job_postings_bm25_description_trgm_idx').using(
-      'gin',
-      table.bm25Description.op('gin_trgm_ops'),
-    ),
-    index('job_postings_bm25_document_trgm_idx').using(
-      'gin',
-      table.bm25Document.op('gin_trgm_ops'),
     ),
     index('job_postings_embedding_hnsw_idx').using(
       'hnsw',
@@ -199,24 +169,24 @@ export const employerProfilesRelations = relations(
   }),
 );
 
-export const jobPostingsRelations = relations(
-  jobPostings,
-  ({ one, many }) => ({
-    employer: one(employerProfiles, {
-      fields: [jobPostings.employerId],
-      references: [employerProfiles.id],
+export const jobPostingsRelations = relations(jobPostings, ({ one, many }) => ({
+  employer: one(employerProfiles, {
+    fields: [jobPostings.employerId],
+    references: [employerProfiles.id],
+  }),
+  applications: many(jobApplications),
+}));
+
+export const jobApplicationsRelations = relations(
+  jobApplications,
+  ({ one }) => ({
+    candidate: one(candidateProfiles, {
+      fields: [jobApplications.candidateId],
+      references: [candidateProfiles.id],
     }),
-    applications: many(jobApplications),
+    job: one(jobPostings, {
+      fields: [jobApplications.jobId],
+      references: [jobPostings.id],
+    }),
   }),
 );
-
-export const jobApplicationsRelations = relations(jobApplications, ({ one }) => ({
-  candidate: one(candidateProfiles, {
-    fields: [jobApplications.candidateId],
-    references: [candidateProfiles.id],
-  }),
-  job: one(jobPostings, {
-    fields: [jobApplications.jobId],
-    references: [jobPostings.id],
-  }),
-}));

@@ -6,7 +6,6 @@ import { Pool } from 'pg';
 export class DatabaseService {
   private readonly logger = new Logger(DatabaseService.name);
   private vectorSupport: boolean | undefined;
-  private bm25Support: boolean | undefined;
 
   private readonly pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -30,22 +29,6 @@ export class DatabaseService {
     return this.vectorSupport;
   }
 
-  async hasBm25Support() {
-    if (this.bm25Support !== undefined) {
-      return this.bm25Support;
-    }
-
-    try {
-      const result = await this.pool.query<{ exists: boolean }>(
-        "SELECT to_regproc('bm25topk') IS NOT NULL AS exists",
-      );
-      this.bm25Support = Boolean(result.rows[0]?.exists);
-    } catch {
-      this.bm25Support = false;
-    }
-
-    return this.bm25Support;
-  }
 }
 
 function messageFrom(error: unknown) {

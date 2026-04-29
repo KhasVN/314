@@ -63,13 +63,25 @@ export class SearchService {
       : undefined;
     const yearsOfExperience =
       input.yearsOfExperience ?? candidate?.yearsOfExperience ?? undefined;
-    const education = input.requiredEducation ?? candidate?.education ?? undefined;
+    const education =
+      input.requiredEducation ?? candidate?.education ?? undefined;
     const vector = await this.vectorForSearch(candidate?.embedding, query);
 
     const lists = await Promise.all([
-      this.rankJobsByBm25(query, input, education, yearsOfExperience, poolLimit),
-      this.rankJobsByFuzzy(query, input, education, yearsOfExperience, poolLimit),
-      this.rankJobsByVector(vector, input, education, yearsOfExperience, poolLimit),
+      this.rankJobsByFuzzy(
+        query,
+        input,
+        education,
+        yearsOfExperience,
+        poolLimit,
+      ),
+      this.rankJobsByVector(
+        vector,
+        input,
+        education,
+        yearsOfExperience,
+        poolLimit,
+      ),
     ]);
 
     const fused = this.fuse(lists).slice(0, Math.max(limit * 2, limit));
@@ -98,16 +110,32 @@ export class SearchService {
     const limit = input.limit ?? 10;
     const poolLimit = Math.max(limit * 5, 30);
     const job = input.jobId ? await this.findJob(input.jobId) : undefined;
-    const query = (input.query ?? job?.searchText ?? job?.description ?? '').trim();
+    const query = (
+      input.query ??
+      job?.searchText ??
+      job?.description ??
+      ''
+    ).trim();
     const minYearsOfExperience =
       input.minYearsOfExperience ?? job?.requiredYearsOfExperience ?? undefined;
     const education = input.education ?? job?.requiredEducation ?? undefined;
     const vector = await this.vectorForSearch(job?.embedding, query);
 
     const lists = await Promise.all([
-      this.rankCandidatesByBm25(query, input, education, minYearsOfExperience, poolLimit),
-      this.rankCandidatesByFuzzy(query, input, education, minYearsOfExperience, poolLimit),
-      this.rankCandidatesByVector(vector, input, education, minYearsOfExperience, poolLimit),
+      this.rankCandidatesByFuzzy(
+        query,
+        input,
+        education,
+        minYearsOfExperience,
+        poolLimit,
+      ),
+      this.rankCandidatesByVector(
+        vector,
+        input,
+        education,
+        minYearsOfExperience,
+        poolLimit,
+      ),
     ]);
 
     const fused = this.fuse(lists).slice(0, Math.max(limit * 2, limit));
@@ -130,85 +158,6 @@ export class SearchService {
         );
   }
 
-  async rebuildJobIndexes() {
-    if (!(await this.database.hasBm25Support())) {
-      return;
-    }
-
-    try {
-      await this.database.db.execute(sql`
-        SELECT bm25createindex('job_postings', 'bm25_description', algo => 'luceneaccurate', stopwordslanguage => 'en')
-      `);
-      await this.database.db.execute(sql`
-        SELECT bm25createindex('job_postings', 'bm25_document', algo => 'luceneaccurate', stopwordslanguage => 'en')
-      `);
-      await this.database.db.execute(sql`
-        SELECT bm25createindex('job_postings', 'bm25_title', algo => 'luceneaccurate', stopwordslanguage => 'en')
-      `);
-    } catch {}
-  }
-
-  async rebuildCandidateIndexes() {
-    if (!(await this.database.hasBm25Support())) {
-      return;
-    }
-
-    try {
-      await this.database.db.execute(sql`
-        SELECT bm25createindex('candidate_profiles', 'bm25_document', algo => 'luceneaccurate', stopwordslanguage => 'en')
-      `);
-    } catch {}
-  }
-
-  private async rankJobsByBm25(
-    query: string,
-    input: JobSearchInput,
-    education: EducationLevel | undefined,
-    yearsOfExperience: number | undefined,
-    limit: number,
-  ): Promise<RankedId[]> {
-    if (!query) {
-      return [];
-    }
-
-    try {
-      const [titleResults, descResults] = await Promise.all([
-        this.database.db.execute<SearchRow & { score: number }>(sql`
-          SELECT jp.id::text AS id, b.score * 1.5 AS score
-          FROM bm25topk('job_postings', 'bm25_title', ${query}, ${limit}, 'luceneaccurate', 'en') b
-          JOIN job_postings jp ON jp.bm25_title = b.doc
-          ${this.where(this.jobFilters(input, education, yearsOfExperience, 'jp'))}
-          ORDER BY b.score DESC
-          LIMIT ${limit}
-        `),
-        this.database.db.execute<SearchRow & { score: number }>(sql`
-          SELECT jp.id::text AS id, b.score * 1.0 AS score
-          FROM bm25topk('job_postings', 'bm25_description', ${query}, ${limit}, 'luceneaccurate', 'en') b
-          JOIN job_postings jp ON jp.bm25_description = b.doc
-          ${this.where(this.jobFilters(input, education, yearsOfExperience, 'jp'))}
-          ORDER BY b.score DESC
-          LIMIT ${limit}
-        `),
-      ]);
-
-      const scores = new Map<string, number>();
-      for (const row of this.rows(titleResults)) {
-        scores.set(row.id, (scores.get(row.id) ?? 0) + (row as { score: number }).score);
-      }
-      for (const row of this.rows(descResults)) {
-        scores.set(row.id, (scores.get(row.id) ?? 0) + (row as { score: number }).score);
-      }
-
-      const sorted = [...scores.entries()]
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, limit);
-
-      return sorted.map(([id], index) => ({ id, rank: index + 1 }));
-    } catch {
-      return [];
-    }
-  }
-
   private async rankJobsByFuzzy(
     query: string,
     input: JobSearchInput,
@@ -224,10 +173,16 @@ export class SearchService {
       const result = await this.database.db.execute<SearchRow>(sql`
         SELECT jp.id::text AS id
         FROM job_postings jp
-        ${this.where(this.jobFilters(input, education, yearsOfExperience, 'jp'))}
+        ${this.where([
+          ...this.jobFilters(input, education, yearsOfExperience, 'jp'),
+          sql`(
+            jp.title % ${query}
+            OR jp.required_skills % ${query}
+            OR jp.location % ${query}
+          )`,
+        ])}
         ORDER BY GREATEST(
           similarity(COALESCE(jp.title, ''), ${query}) * 1.5,
-          similarity(COALESCE(jp.description, ''), ${query}),
           similarity(COALESCE(jp.required_skills, ''), ${query}),
           similarity(COALESCE(jp.location, ''), ${query})
         ) DESC
@@ -260,33 +215,6 @@ export class SearchService {
           sql`jp.embedding IS NOT NULL`,
         ])}
         ORDER BY jp.embedding <=> ${this.vector(vector)}::vector(1536)
-        LIMIT ${limit}
-      `);
-
-      return this.rank(this.rows(result));
-    } catch {
-      return [];
-    }
-  }
-
-  private async rankCandidatesByBm25(
-    query: string,
-    input: CandidateSearchInput,
-    education: EducationLevel | undefined,
-    minYearsOfExperience: number | undefined,
-    limit: number,
-  ): Promise<RankedId[]> {
-    if (!query) {
-      return [];
-    }
-
-    try {
-      const result = await this.database.db.execute<SearchRow>(sql`
-        SELECT cp.id::text AS id
-        FROM bm25topk('candidate_profiles', 'bm25_document', ${query}, ${limit}, 'luceneaccurate', 'en') b
-        JOIN candidate_profiles cp ON cp.bm25_document = b.doc
-        ${this.where(this.candidateFilters(input, education, minYearsOfExperience, 'cp'))}
-        ORDER BY b.score DESC
         LIMIT ${limit}
       `);
 
@@ -344,7 +272,12 @@ export class SearchService {
         SELECT cp.id::text AS id
         FROM candidate_profiles cp
         ${this.where([
-          ...this.candidateFilters(input, education, minYearsOfExperience, 'cp'),
+          ...this.candidateFilters(
+            input,
+            education,
+            minYearsOfExperience,
+            'cp',
+          ),
           sql`cp.embedding IS NOT NULL`,
         ])}
         ORDER BY cp.embedding <=> ${this.vector(vector)}::vector
@@ -375,11 +308,15 @@ export class SearchService {
     }
 
     if (education) {
-      filters.push(sql`(${t('required_education')} IS NULL OR ${this.educationRank(t('required_education'))} <= ${this.educationRankValue(education)})`);
+      filters.push(
+        sql`(${t('required_education')} IS NULL OR ${this.educationRank(t('required_education'))} <= ${this.educationRankValue(education)})`,
+      );
     }
 
     if (yearsOfExperience !== undefined) {
-      filters.push(sql`(${t('required_years_of_experience')} IS NULL OR ${t('required_years_of_experience')} <= ${yearsOfExperience})`);
+      filters.push(
+        sql`(${t('required_years_of_experience')} IS NULL OR ${t('required_years_of_experience')} <= ${yearsOfExperience})`,
+      );
     }
 
     return filters;
@@ -395,15 +332,21 @@ export class SearchService {
     const filters: SQL[] = [];
 
     if (education) {
-      filters.push(sql`${this.educationRank(t('education'))} >= ${this.educationRankValue(education)}`);
+      filters.push(
+        sql`${this.educationRank(t('education'))} >= ${this.educationRankValue(education)}`,
+      );
     }
 
     if (input.location) {
-      filters.push(sql`(COALESCE(${t('contact_info')}, '') ILIKE ${`%${input.location}%`} OR COALESCE(${t('search_text')}, '') ILIKE ${`%${input.location}%`})`);
+      filters.push(
+        sql`(COALESCE(${t('contact_info')}, '') ILIKE ${`%${input.location}%`} OR COALESCE(${t('search_text')}, '') ILIKE ${`%${input.location}%`})`,
+      );
     }
 
     if (minYearsOfExperience !== undefined) {
-      filters.push(sql`(${t('years_of_experience')} IS NOT NULL AND ${t('years_of_experience')} >= ${minYearsOfExperience})`);
+      filters.push(
+        sql`(${t('years_of_experience')} IS NOT NULL AND ${t('years_of_experience')} >= ${minYearsOfExperience})`,
+      );
     }
 
     return filters;
@@ -519,7 +462,7 @@ export class SearchService {
         employerId: jobPostings.employerId,
         title: jobPostings.title,
         companyInfo: jobPostings.companyInfo,
-        description: jobPostings.description,
+        description: sql<string>`left(${jobPostings.description}, 800)`,
         requiredEducation: jobPostings.requiredEducation,
         requiredSkills: jobPostings.requiredSkills,
         requiredYearsOfExperience: jobPostings.requiredYearsOfExperience,
@@ -562,7 +505,10 @@ export class SearchService {
 
     return rows
       .map((row) => ({ ...row, rrfScore: scoreById.get(getId(row)) ?? 0 }))
-      .sort((a, b) => (orderById.get(getId(a)) ?? 0) - (orderById.get(getId(b)) ?? 0));
+      .sort(
+        (a, b) =>
+          (orderById.get(getId(a)) ?? 0) - (orderById.get(getId(b)) ?? 0),
+      );
   }
 
   private async rerank<T extends { id: string; rrfScore: number }>(
@@ -605,5 +551,4 @@ export class SearchService {
       return [];
     }
   }
-
 }

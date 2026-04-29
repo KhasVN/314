@@ -3,7 +3,7 @@ import { eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { jobPostings } from '../../db/domain-schema';
 import { AiService } from '../ai/ai.service';
-import { buildBm25Document, buildSearchText } from '../ai/search-text';
+import { buildSearchText } from '../ai/search-text';
 import { DatabaseService } from '../database/database.service';
 import { SearchService } from '../search/search.service';
 import { CreateJobDto } from './dto/create-job.dto';
@@ -36,13 +36,10 @@ export class JobsService {
         location: createJobDto.location,
         status: createJobDto.status ?? 'published',
         searchText,
-        bm25Description: buildBm25Document(id, createJobDto.description),
-        bm25Document: buildBm25Document(id, searchText),
         embedding: embedding.length ? embedding : null,
       })
       .returning();
 
-    await this.searchService.rebuildJobIndexes();
     return job;
   }
 
@@ -96,14 +93,11 @@ export class JobsService {
         location: next.location,
         status: next.status,
         searchText,
-        bm25Description: buildBm25Document(id, next.description),
-        bm25Document: buildBm25Document(id, searchText),
         embedding: embedding.length ? embedding : current.embedding,
       })
       .where(eq(jobPostings.id, id))
       .returning();
 
-    await this.searchService.rebuildJobIndexes();
     return job;
   }
 
@@ -117,7 +111,6 @@ export class JobsService {
       throw new NotFoundException('Job not found');
     }
 
-    await this.searchService.rebuildJobIndexes();
     return job;
   }
 
