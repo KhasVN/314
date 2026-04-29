@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm';
 import {
+  boolean,
   index,
   integer,
   pgEnum,
@@ -45,7 +46,11 @@ export const candidateProfiles = pgTable(
     major: text('major'),
     yearsOfExperience: integer('years_of_experience'),
     skills: text('skills'),
+    workExperience: text('work_experience'),
+    preferredLocations: text('preferred_locations'),
+    preferredWorkMode: text('preferred_work_mode'),
     resumeText: text('resume_text'),
+    isMember: boolean('is_member').default(false).notNull(),
     searchText: text('search_text'),
     embedding: vector('embedding', { dimensions: 1536 }),
   },
@@ -72,6 +77,7 @@ export const employerProfiles = pgTable(
     companyName: text('company_name').notNull(),
     companyInfo: text('company_info'),
     contactInfo: text('contact_info'),
+    isMember: boolean('is_member').default(false).notNull(),
   },
   (table) => [uniqueIndex('employer_profiles_user_id_unique').on(table.userId)],
 );

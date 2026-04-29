@@ -19,6 +19,7 @@ export class EmployersService {
         companyName: createEmployerDto.companyName,
         companyInfo: createEmployerDto.companyInfo,
         contactInfo: createEmployerDto.contactInfo,
+        isMember: createEmployerDto.isMember ?? false,
       })
       .returning();
 

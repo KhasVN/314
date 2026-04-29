@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { inArray, sql, type SQL } from 'drizzle-orm';
 import {
   candidateProfiles,
+  employerProfiles,
   jobPostings,
   type educationLevel,
   type workMode,
@@ -42,6 +43,7 @@ export type CandidateSearchInput = {
   jobId?: string;
   education?: EducationLevel;
   location?: string;
+  workMode?: WorkMode;
   minYearsOfExperience?: number;
   limit?: number;
   rerank?: boolean;
@@ -55,12 +57,12 @@ export class SearchService {
   ) {}
 
   async searchJobs(input: JobSearchInput) {
-    const limit = input.limit ?? 10;
-    const poolLimit = Math.max(limit * 5, 30);
     const query = input.query?.trim() ?? '';
     const candidate = input.candidateId
       ? await this.findCandidate(input.candidateId)
       : undefined;
+    const limit = this.limit(input.limit, Boolean(candidate?.isMember));
+    const poolLimit = Math.max(limit * 5, 30);
     const yearsOfExperience =
       input.yearsOfExperience ?? candidate?.yearsOfExperience ?? undefined;
     const education =
@@ -107,8 +109,6 @@ export class SearchService {
   }
 
   async searchCandidates(input: CandidateSearchInput) {
-    const limit = input.limit ?? 10;
-    const poolLimit = Math.max(limit * 5, 30);
     const job = input.jobId ? await this.findJob(input.jobId) : undefined;
     const query = (
       input.query ??
@@ -119,6 +119,8 @@ export class SearchService {
     const minYearsOfExperience =
       input.minYearsOfExperience ?? job?.requiredYearsOfExperience ?? undefined;
     const education = input.education ?? job?.requiredEducation ?? undefined;
+    const limit = this.limit(input.limit, Boolean(job?.employerIsMember));
+    const poolLimit = Math.max(limit * 5, 30);
     const vector = await this.vectorForSearch(job?.embedding, query);
 
     const lists = await Promise.all([
@@ -151,6 +153,9 @@ export class SearchService {
             candidate.major,
             candidate.yearsOfExperience,
             candidate.skills,
+            candidate.workExperience,
+            candidate.preferredLocations,
+            candidate.preferredWorkMode,
             candidate.resumeText,
           ]
             .filter(Boolean)
@@ -175,17 +180,9 @@ export class SearchService {
         FROM job_postings jp
         ${this.where([
           ...this.jobFilters(input, education, yearsOfExperience, 'jp'),
-          sql`(
-            jp.title % ${query}
-            OR jp.required_skills % ${query}
-            OR jp.location % ${query}
-          )`,
+          sql`(jp.search_text ILIKE ${`%${query}%`} OR jp.search_text % ${query})`,
         ])}
-        ORDER BY GREATEST(
-          similarity(COALESCE(jp.title, ''), ${query}) * 1.5,
-          similarity(COALESCE(jp.required_skills, ''), ${query}),
-          similarity(COALESCE(jp.location, ''), ${query})
-        ) DESC
+        ORDER BY similarity(COALESCE(jp.search_text, ''), ${query}) DESC
         LIMIT ${limit}
       `);
 
@@ -239,14 +236,16 @@ export class SearchService {
       const result = await this.database.db.execute<SearchRow>(sql`
         SELECT cp.id::text AS id
         FROM candidate_profiles cp
-        ${this.where(this.candidateFilters(input, education, minYearsOfExperience, 'cp'))}
-        ORDER BY GREATEST(
-          similarity(COALESCE(cp.full_name, ''), ${query}),
-          similarity(COALESCE(cp.major, ''), ${query}),
-          similarity(COALESCE(cp.skills, ''), ${query}),
-          similarity(COALESCE(cp.resume_text, ''), ${query}),
-          similarity(COALESCE(cp.search_text, ''), ${query})
-        ) DESC
+        ${this.where([
+          ...this.candidateFilters(
+            input,
+            education,
+            minYearsOfExperience,
+            'cp',
+          ),
+          sql`(cp.search_text ILIKE ${`%${query}%`} OR cp.search_text % ${query})`,
+        ])}
+        ORDER BY similarity(COALESCE(cp.search_text, ''), ${query}) DESC
         LIMIT ${limit}
       `);
 
@@ -339,7 +338,13 @@ export class SearchService {
 
     if (input.location) {
       filters.push(
-        sql`(COALESCE(${t('contact_info')}, '') ILIKE ${`%${input.location}%`} OR COALESCE(${t('search_text')}, '') ILIKE ${`%${input.location}%`})`,
+        sql`(COALESCE(${t('contact_info')}, '') ILIKE ${`%${input.location}%`} OR COALESCE(${t('preferred_locations')}, '') ILIKE ${`%${input.location}%`} OR COALESCE(${t('search_text')}, '') ILIKE ${`%${input.location}%`})`,
+      );
+    }
+
+    if (input.workMode) {
+      filters.push(
+        sql`(${t('preferred_work_mode')} IS NULL OR ${t('preferred_work_mode')} = ${input.workMode})`,
       );
     }
 
@@ -444,8 +449,27 @@ export class SearchService {
 
   private async findJob(id: string) {
     const [job] = await this.database.db
-      .select()
+      .select({
+        id: jobPostings.id,
+        employerId: jobPostings.employerId,
+        title: jobPostings.title,
+        companyInfo: jobPostings.companyInfo,
+        description: jobPostings.description,
+        requiredEducation: jobPostings.requiredEducation,
+        requiredSkills: jobPostings.requiredSkills,
+        requiredYearsOfExperience: jobPostings.requiredYearsOfExperience,
+        workMode: jobPostings.workMode,
+        location: jobPostings.location,
+        status: jobPostings.status,
+        searchText: jobPostings.searchText,
+        embedding: jobPostings.embedding,
+        employerIsMember: employerProfiles.isMember,
+      })
       .from(jobPostings)
+      .leftJoin(
+        employerProfiles,
+        sql`${jobPostings.employerId} = ${employerProfiles.id}`,
+      )
       .where(sql`${jobPostings.id} = ${id}`)
       .limit(1);
     return job;
@@ -489,6 +513,10 @@ export class SearchService {
         major: candidateProfiles.major,
         yearsOfExperience: candidateProfiles.yearsOfExperience,
         skills: candidateProfiles.skills,
+        workExperience: candidateProfiles.workExperience,
+        preferredLocations: candidateProfiles.preferredLocations,
+        preferredWorkMode: candidateProfiles.preferredWorkMode,
+        isMember: candidateProfiles.isMember,
         resumeText: candidateProfiles.resumeText,
       })
       .from(candidateProfiles)
@@ -550,5 +578,9 @@ export class SearchService {
     } catch {
       return [];
     }
+  }
+
+  private limit(limit: number | undefined, isMember: boolean) {
+    return isMember ? (limit ?? 1000) : Math.min(limit ?? 10, 10);
   }
 }
