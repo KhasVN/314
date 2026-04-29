@@ -1,0 +1,14 @@
+.git
+.nx
+.tmp
+.vscode
+apps/web/.next
+dist
+node_modules
+output
+tmp
+uploads
+.env
+.env.*
+*.log
+raw_data.zip
