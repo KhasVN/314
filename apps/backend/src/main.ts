@@ -11,11 +11,16 @@ async function bootstrap() {
     origin: process.env.WEB_ORIGIN ?? 'http://localhost:3000',
     credentials: true,
   });
-  app.getHttpAdapter().getInstance().all('/api/auth/*splat', toNodeHandler(auth));
+  app
+    .getHttpAdapter()
+    .getInstance()
+    .all('/api/auth/*splat', toNodeHandler(auth));
   app.setGlobalPrefix(globalPrefix);
-  const port = process.env.PORT || 4010;
+  const port = process.env.PORT || 4000;
   await app.listen(port);
-  Logger.log(`Application is running on: http://localhost:${port}/${globalPrefix}`);
+  Logger.log(
+    `Application is running on: http://localhost:${port}/${globalPrefix}`,
+  );
 }
 
 bootstrap();
