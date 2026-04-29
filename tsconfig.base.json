@@ -14,7 +14,9 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "paths": {
-      "@talent-matching/dtos": ["./libs/shared/dtos/src/index.ts"]
+      "@talent-matching/dtos": ["./libs/shared/dtos/src/index.ts"],
+      "@web/*": ["./apps/web/src/*"],
+      "@backend/*": ["./apps/backend/src/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -65,3 +65,6 @@ out
 *.sqlite
 *.sqlite3
 uploads
+
+# Test artifacts / screenshots
+output/

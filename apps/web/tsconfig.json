@@ -2,7 +2,6 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "jsx": "preserve",
-
     "strict": true,
     "noEmit": true,
     "emitDeclarationOnly": false,
@@ -16,6 +15,14 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@talent-matching/dtos": ["../../libs/shared/dtos/src/index.ts"],
+      "@/*": ["./src/*"],
+      "@components/*": ["./src/features/talent/components/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@features/*": ["./src/features/*"]
+    },
     "plugins": [{ "name": "next" }]
   },
   "include": [
@@ -23,17 +30,9 @@
     "**/*.tsx",
     "**/*.js",
     "**/*.jsx",
-
     "../../apps/web/.next/types/**/*.ts",
     "../../dist/apps/web/.next/types/**/*.ts",
-
     "next-env.d.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "jest.config.ts",
-    "jest.config.cts",
-    "**/*.spec.ts",
-    "**/*.test.ts"
-  ]
+  "exclude": ["node_modules", "jest.config.ts", "jest.config.cts", "**/*.spec.ts", "**/*.test.ts"]
 }
