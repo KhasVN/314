@@ -1,23 +1,30 @@
-// const { createGlobPatternsForDependencies } = require('@nx/next/tailwind');
-
-// The above utility import will not work if you are using Next.js' --turbo.
-// Instead you will have to manually add the dependent paths to be included.
-// For example
-// ../libs/buttons/**/*.{ts,tsx,js,jsx,html}',                 <--- Adding a shared lib
-// !../libs/buttons/**/*.{stories,spec}.{ts,tsx,js,jsx,html}', <--- Skip adding spec/stories files from shared lib
-
-// If you are **not** using `--turbo` you can uncomment both lines 1 & 19.
-// A discussion of the issue can be found: https://github.com/nrwl/nx/issues/26510
-
-/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    './{src,pages,components,app}/**/*.{ts,tsx,js,jsx,html}',
-    '!./{src,pages,components,app}/**/*.{stories,spec}.{ts,tsx,js,jsx,html}',
-    //     ...createGlobPatternsForDependencies(__dirname)
+    './src/**/*.{ts,tsx,js,jsx}',
+    '../../libs/shared/dtos/src/**/*.{ts,tsx,js,jsx}',
   ],
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [require('daisyui')],
+  daisyui: {
+    themes: [
+      {
+        talent: {
+          primary: '#040415',
+          secondary: '#c8e4f6',
+          accent: '#fdf1af',
+          neutral: '#040415',
+          'base-100': '#ffffff',
+          'base-200': '#f6f6f4',
+          'base-300': '#d8d8d2',
+          'base-content': '#040415',
+          info: '#c8e4f6',
+          success: '#d9f7be',
+          warning: '#fdf1af',
+          error: '#ff6b6b',
+        },
+      },
+    ],
+  },
 };
