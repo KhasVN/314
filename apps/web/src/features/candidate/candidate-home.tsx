@@ -2,15 +2,6 @@
 
 // ═══════════════════════════════════════════════════════════════
 // candidate-home.tsx  —  ROOT PAGE COMPONENT
-//
-// This is the main entry point for the Candidate Homepage.
-// It manages ALL shared state (search, saved jobs, selected job)
-// and fetches data from the backend database via the API.
-//
-// DATA FLOW:
-//   PostgreSQL DB → NestJS backend (port 4000)
-//     → talentApi (axios) → useSWR (cache+fetch)
-//       → this component → child components
 // ═══════════════════════════════════════════════════════════════
 
 import { useState } from 'react';
@@ -25,60 +16,38 @@ import type { JobDto, JobSearchQueryDto } from '@talent-matching/dtos';
 
 export function CandidateHome() {
 
-  // ── SEARCH STATE ────────────────────────────────────────────
-  // null = no search submitted yet → show all jobs from DB
-  // object = user has searched → show filtered/ranked results
   const [searchParams, setSearchParams] = useState<JobSearchQueryDto | null>(null);
-
-  // ── SELECTED JOB STATE ──────────────────────────────────────
-  // Stores the job the user clicked on to view in detail panel
   const [selectedJob, setSelectedJob] = useState<JobDto | null>(null);
-
-  // ── SAVED JOBS STATE ────────────────────────────────────────
-  // Stores IDs of jobs the user bookmarked (saved for later)
   const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set());
-
-  // ── ACTIVE TAB ──────────────────────────────────────────────
-  // Controls which section is shown: 'all' | 'recommended'
   const [activeTab, setActiveTab] = useState<'all' | 'recommended'>('all');
-
-  // ── SELECTED CANDIDATE PROFILE ──────────────────────────────
-  // The candidate whose profile drives the Top-10 recommendations
   const [selectedCandidateId, setSelectedCandidateId] = useState('');
 
-  // ── FETCH ALL JOBS FROM DATABASE ────────────────────────────
-  // Calls GET /api/jobs on the backend
-  // Returns every published job posting stored in PostgreSQL
+  // ── DELETE PROFILE STATE ─────────────────────────────────────
+  // Controls the delete confirmation modal visibility
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
   const { data: allJobs = [], isLoading: loadingAll } = useSWR(
     'candidate-all-jobs',
     talentApi.jobs.list
   );
 
-  // ── FETCH ALL CANDIDATES (to pick "you" for recommendations) ─
-  const { data: allCandidates = [] } = useSWR(
+  const { data: allCandidates = [], mutate: mutateCandidates } = useSWR(
     'candidate-list',
     talentApi.candidates.list
   );
 
-  // ── FETCH SEARCH RESULTS FROM DATABASE ──────────────────────
-  // Only runs when user submits a search query
-  // Calls GET /api/jobs/search with keyword + filter params
-  // Backend uses pg_trgm fuzzy search + pgvector semantic search
   const { data: searchResults, isLoading: loadingSearch } = useSWR(
     searchParams ? ['cand-job-search', searchParams] : null,
     () => talentApi.jobs.search(searchParams!)
   );
 
-  // ── FETCH TOP-10 RECOMMENDED JOBS ───────────────────────────
-  // Only runs when a candidate profile is selected
-  // Calls GET /api/jobs/search?candidateId=X&limit=10
-  // Backend ranks jobs using the candidate's embedding vector
   const { data: recommendedJobs = [], isLoading: loadingRecs } = useSWR(
     selectedCandidateId ? ['cand-recommendations', selectedCandidateId] : null,
     () => talentApi.jobs.search({ candidateId: selectedCandidateId, limit: 10, rerank: true })
   );
 
-  // ── DECIDE WHICH JOBS TO DISPLAY ────────────────────────────
   const displayJobs: JobDto[] =
     activeTab === 'recommended' ? recommendedJobs :
     searchParams ? (searchResults ?? []) : allJobs;
@@ -106,18 +75,47 @@ export function CandidateHome() {
     });
   };
 
+  // ── DELETE CANDIDATE PROFILE ─────────────────────────────────
+  // Calls DELETE /api/candidates/:id on the backend
+  // Removes the candidate profile from the database
+  // Note: the auth user (email/password) remains in the user table
+  const handleDeleteProfile = async () => {
+    if (!selectedCandidateId) return;
+    setDeleting(true);
+    setDeleteError('');
+
+    try {
+      // Call DELETE /api/candidates/:id
+      await talentApi.candidates.remove(selectedCandidateId);
+
+      // Clear the selected candidate and refresh the list
+      setSelectedCandidateId('');
+      setShowDeleteModal(false);
+      await mutateCandidates(); // refresh candidate list from DB
+
+    } catch (err: any) {
+      setDeleteError(err?.message ?? 'Failed to delete. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const sectionLabel =
     activeTab === 'recommended' ? 'Top 10 recommended for you' :
     searchParams ? 'Search results' : 'All jobs';
 
+  // Find the selected candidate's name for the delete modal
+  const selectedCandidate = allCandidates.find((c) => c.id === selectedCandidateId);
+
   return (
-    <div className="min-h-screen" style={{ background: '#f3f6fb' }}>
+    <div className="min-h-screen" style={{ background: '#f8f7ff' }}>
 
       {/* NAVBAR */}
       <Navbar
         candidates={allCandidates}
         selectedCandidateId={selectedCandidateId}
         onCandidateChange={setSelectedCandidateId}
+        onDeleteProfile={() => setShowDeleteModal(true)}
       />
 
       {/* HERO SEARCH */}
@@ -201,6 +199,100 @@ export function CandidateHome() {
 
         </div>
       </main>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      {/* DELETE CONFIRMATION MODAL                              */}
+      {/* Shown when user clicks "Delete profile" in navbar      */}
+      {/* Calls DELETE /api/candidates/:id on confirm            */}
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      {showDeleteModal && (
+        // Dark overlay background
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '24px',
+        }}>
+          {/* Modal card */}
+          <div style={{
+            background: '#fff', borderRadius: 20,
+            padding: '32px', maxWidth: 420, width: '100%',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+          }}>
+            {/* Warning icon */}
+            <div style={{
+              width: 52, height: 52, borderRadius: '50%',
+              background: '#fef2f2', margin: '0 auto 16px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#dc2626" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+            </div>
+
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#111827', textAlign: 'center', margin: '0 0 8px' }}>
+              Delete candidate profile?
+            </h2>
+            <p style={{ fontSize: 14, color: '#6b7280', textAlign: 'center', margin: '0 0 6px' }}>
+              This will permanently delete:
+            </p>
+            <p style={{
+              fontSize: 15, fontWeight: 600, color: '#dc2626',
+              textAlign: 'center', margin: '0 0 16px',
+            }}>
+              {selectedCandidate?.fullName ?? 'this profile'}
+            </p>
+            <p style={{ fontSize: 13, color: '#9ca3af', textAlign: 'center', margin: '0 0 24px' }}>
+              This removes the candidate profile from the database. Your login account (email + password) will still exist.
+            </p>
+
+            {/* Error message */}
+            {deleteError && (
+              <div style={{
+                padding: '10px 14px', borderRadius: 8, marginBottom: 16,
+                background: '#fef2f2', border: '1px solid #fecaca',
+                color: '#dc2626', fontSize: 13, textAlign: 'center',
+              }}>
+                {deleteError}
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div style={{ display: 'flex', gap: 12 }}>
+              {/* Cancel */}
+              <button
+                onClick={() => { setShowDeleteModal(false); setDeleteError(''); }}
+                disabled={deleting}
+                style={{
+                  flex: 1, padding: '11px 16px', borderRadius: 10,
+                  border: '1.5px solid #e5e7eb', background: '#fff',
+                  fontSize: 14, fontWeight: 600, color: '#374151',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+
+              {/* Confirm delete */}
+              <button
+                onClick={handleDeleteProfile}
+                disabled={deleting}
+                style={{
+                  flex: 1, padding: '11px 16px', borderRadius: 10,
+                  border: 'none',
+                  background: deleting ? '#fca5a5' : '#dc2626',
+                  fontSize: 14, fontWeight: 600, color: '#fff',
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                  transition: 'background 0.2s',
+                }}
+              >
+                {deleting ? 'Deleting...' : 'Yes, delete profile'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
@@ -212,13 +304,13 @@ function TabButton({ active, onClick, label, count, disabled, hint }: {
   return (
     <button onClick={disabled ? undefined : onClick} title={hint}
       className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors mr-1 ${
-        active ? 'border-blue-600 text-blue-600' :
+        active ? 'border-indigo-500 text-indigo-600' :
         disabled ? 'border-transparent text-gray-300 cursor-not-allowed' :
         'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
       }`}>
       {label}
       {count > 0 && (
-        <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${active ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+        <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${active ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>
           {count}
         </span>
       )}
