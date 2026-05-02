@@ -25,8 +25,20 @@ export class ApplicationsService {
     return application;
   }
 
-  findAll() {
-    return this.database.db.select().from(jobApplications);
+  // ── findAll ───────────────────────────────────────────────────
+  // Fetches job applications from the database with optional filters.
+  // If candidateId is provided → returns only that candidate's applications
+  // If jobId is provided       → returns only applications for that job
+  // If neither is provided     → returns all applications in the database
+  findAll(filters?: { candidateId?: string; jobId?: string }) {
+    const query = this.database.db.select().from(jobApplications);
+    if (filters?.candidateId) {
+      return query.where(eq(jobApplications.candidateId, filters.candidateId));
+    }
+    if (filters?.jobId) {
+      return query.where(eq(jobApplications.jobId, filters.jobId));
+    }
+    return query;
   }
 
   async findOne(id: string) {
