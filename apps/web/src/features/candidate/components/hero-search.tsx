@@ -1,16 +1,7 @@
 'use client';
 
-// ═══════════════════════════════════════════════════════════════
-// hero-search.tsx  —  HERO SEARCH BANNER
-//
-// The large blue banner at the top of the page.
-// Contains: headline, keyword input, location input, search button.
-// Also shows popular quick-search tags below the bar.
-//
-// When submitted, calls onSearch() with the query params.
-// The parent (candidate-home.tsx) sends these to the backend
-// via GET /api/jobs/search which runs fuzzy + vector search.
-// ═══════════════════════════════════════════════════════════════
+// hero-search.tsx — matches home page theme
+// Light purple gradient banner, indigo/purple accents
 
 import { useState, type FormEvent } from 'react';
 import type { JobSearchQueryDto } from '@talent-matching/dtos';
@@ -20,33 +11,22 @@ type Props = {
   onClear: () => void;
 };
 
-// ── POPULAR TAGS — quick fill for common searches ─────────────
 const POPULAR_TAGS = ['Software Engineer', 'Data Analyst', 'Product Manager', 'Remote', 'Marketing', 'UX Designer'];
 
 export function HeroSearch({ onSearch, onClear }: Props) {
+  const [keyword, setKeyword]   = useState('');
+  const [location, setLocation] = useState('');
 
-  // ── LOCAL FORM STATE ──────────────────────────────────────
-  const [keyword, setKeyword]   = useState(''); // job title / keyword input
-  const [location, setLocation] = useState(''); // location / city input
-
-  // ── HANDLE FORM SUBMIT ────────────────────────────────────
-  // Packages form inputs into the search query and calls parent
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onSearch({
-      query:    keyword.trim()  || undefined,
-      location: location.trim() || undefined,
-      limit: 100,
-    });
+    onSearch({ query: keyword.trim() || undefined, location: location.trim() || undefined, limit: 100 });
   };
 
-  // ── HANDLE QUICK TAG CLICK ────────────────────────────────
   const handleTag = (tag: string) => {
     setKeyword(tag);
     onSearch({ query: tag, limit: 100 });
   };
 
-  // ── HANDLE CLEAR ─────────────────────────────────────────
   const handleClear = () => {
     setKeyword('');
     setLocation('');
@@ -54,78 +34,69 @@ export function HeroSearch({ onSearch, onClear }: Props) {
   };
 
   return (
-    <section style={{ background: 'linear-gradient(135deg, #1e40af 0%, #1a56db 60%, #2563eb 100%)' }}>
-      <div className="max-w-7xl mx-auto px-4 py-10">
+    <section style={{ background: 'linear-gradient(160deg, #f8f7ff 0%, #f0f4ff 60%, #faf5ff 100%)', padding: '48px 24px 40px', position: 'relative', overflow: 'hidden' }}>
 
-        {/* ── HEADLINE ── */}
-        <h1 className="text-white font-bold mb-1" style={{ fontSize: 'clamp(1.6rem, 3vw, 2.4rem)' }}>
-          Find your next job
+      {/* Decorative blobs */}
+      <div style={{ position: 'absolute', top: -60, right: '5%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+      <div style={{ position: 'absolute', bottom: -40, left: '5%', width: 250, height: 250, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+
+      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+
+        {/* Badge */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#ede9fe', color: '#7c3aed', fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 9999, marginBottom: 16, letterSpacing: '0.04em' }}>
+          <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#7c3aed', display: 'inline-block' }}/>
+          INTELLIGENT TALENT MATCHING
+        </div>
+
+        <h1 style={{ fontWeight: 900, color: '#0f172a', margin: '0 0 6px', fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', letterSpacing: '-0.5px' }}>
+          Find your next role
         </h1>
-        <p className="text-blue-200 text-sm mb-6">
-          Search thousands of jobs — powered by intelligent matching
+        <p style={{ fontSize: 15, color: '#64748b', margin: '0 0 24px' }}>
+          Search thousands of jobs matched to your skills and experience
         </p>
 
-        {/* ── SEARCH BAR ── */}
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
+        {/* Search bar */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
 
-          {/* KEYWORD INPUT — searches title, description, skills in DB */}
-          <div className="flex-1 flex items-center bg-white rounded-full px-4 gap-3 shadow-lg">
-            <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-            <input
-              type="text"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Job title, keywords, or company"
-              className="w-full py-3.5 text-gray-800 bg-transparent outline-none text-sm placeholder:text-gray-400"
-            />
-            {keyword && (
-              <button type="button" onClick={handleClear} className="text-gray-300 hover:text-gray-500 text-lg">✕</button>
-            )}
-          </div>
+            {/* Keyword */}
+            <div style={{ flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', background: '#fff', borderRadius: 12, padding: '0 16px', gap: 10, border: '1.5px solid #e0e7ff', boxShadow: '0 1px 4px rgba(99,102,241,0.06)' }}>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <input type="text" value={keyword} onChange={e => setKeyword(e.target.value)}
+                placeholder="Job title, keywords, or company"
+                style={{ flex: 1, padding: '12px 0', background: 'transparent', border: 'none', outline: 'none', fontSize: 14, color: '#111827' }}/>
+              {keyword && <button type="button" onClick={handleClear} style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 16, padding: 0 }}>✕</button>}
+            </div>
 
-          {/* LOCATION INPUT — filters by job.location field in DB */}
-          <div className="flex items-center bg-white rounded-full px-4 gap-3 sm:w-56 shadow-lg">
-            <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="City or remote"
-              className="w-full py-3.5 text-gray-800 bg-transparent outline-none text-sm placeholder:text-gray-400"
-            />
-          </div>
+            {/* Location */}
+            <div style={{ width: 220, display: 'flex', alignItems: 'center', background: '#fff', borderRadius: 12, padding: '0 16px', gap: 10, border: '1.5px solid #e0e7ff', boxShadow: '0 1px 4px rgba(99,102,241,0.06)' }}>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              </svg>
+              <input type="text" value={location} onChange={e => setLocation(e.target.value)}
+                placeholder="City or remote"
+                style={{ flex: 1, padding: '12px 0', background: 'transparent', border: 'none', outline: 'none', fontSize: 14, color: '#111827' }}/>
+            </div>
 
-          {/* SEARCH BUTTON */}
-          <button
-            type="submit"
-            className="px-8 py-3.5 rounded-full text-white font-semibold text-sm shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5"
-            style={{ background: '#059669' }}
-          >
-            Find jobs
-          </button>
-
-        </form>
-
-        {/* ── POPULAR QUICK-SEARCH TAGS ── */}
-        <div className="flex flex-wrap items-center gap-2 mt-4">
-          <span className="text-blue-300 text-xs">Popular:</span>
-          {POPULAR_TAGS.map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => handleTag(tag)}
-              className="text-xs px-3 py-1 rounded-full text-white transition-colors hover:bg-white/30"
-              style={{ background: 'rgba(255,255,255,0.15)' }}
-            >
-              {tag}
+            {/* Submit */}
+            <button type="submit" style={{ padding: '12px 28px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+              Find jobs
             </button>
-          ))}
-        </div>
+          </div>
+
+          {/* Popular tags */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 12, color: '#9ca3af', fontWeight: 500 }}>Popular:</span>
+            {POPULAR_TAGS.map(tag => (
+              <button key={tag} type="button" onClick={() => handleTag(tag)}
+                style={{ fontSize: 12, padding: '4px 12px', borderRadius: 9999, background: '#fff', border: '1px solid #e0e7ff', color: '#6366f1', fontWeight: 500, cursor: 'pointer' }}>
+                {tag}
+              </button>
+            ))}
+          </div>
+        </form>
 
       </div>
     </section>
