@@ -23,9 +23,13 @@ export function AppFrame({ activeTab, children, onTabChange }: AppFrameProps) {
                   {title(tab)}
                 </button>
               ))}
-              {/* ── Nan's candidate homepage link ── */}
-              <a href="/home" className="btn btn-sm rounded-none btn-accent">
+              {/* ── Home page link ── */}
+              <a href="/home" className="btn btn-sm rounded-none btn-secondary">
                 Home
+              </a>
+              {/* ── Candidate homepage link ── */}
+              <a href="/candidate" className="btn btn-sm rounded-none btn-accent">
+                Candidate Home
               </a>
             </div>
           </nav>
