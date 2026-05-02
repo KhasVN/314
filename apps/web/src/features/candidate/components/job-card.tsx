@@ -32,8 +32,8 @@ export function JobCard({ job, rank, isSelected, isSaved, onClick, onSave }: Pro
         bg-white rounded-xl p-5 cursor-pointer border-2 transition-all duration-150
         hover:shadow-md hover:-translate-y-0.5
         ${isSelected
-          ? 'border-blue-500 shadow-md'
-          : 'border-gray-100 hover:border-blue-200'
+          ? 'border-indigo-500 shadow-md'
+          : 'border-gray-100 hover:border-indigo-200'
         }
       `}
     >
@@ -42,7 +42,7 @@ export function JobCard({ job, rank, isSelected, isSaved, onClick, onSave }: Pro
         {/* ── RANK BADGE (only shown in Recommended tab) ── */}
         {rank !== undefined && (
           <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 mt-0.5"
-            style={{ background: rank <= 3 ? '#dbeafe' : '#f3f4f6', color: rank <= 3 ? '#1a56db' : '#6b7280' }}>
+            style={{ background: rank <= 3 ? '#dbeafe' : '#f3f4f6', color: rank <= 3 ? '#6366f1' : '#6b7280' }}>
             #{rank}
           </div>
         )}
@@ -64,7 +64,7 @@ export function JobCard({ job, rank, isSelected, isSaved, onClick, onSave }: Pro
           </p>
 
           {/* Job title — main clickable heading */}
-          <h3 className="font-semibold text-blue-700 text-base leading-snug mb-1.5 hover:underline truncate">
+          <h3 className="font-semibold text-indigo-600 text-base leading-snug mb-1.5 hover:underline truncate">
             {job.title}
           </h3>
 
@@ -100,7 +100,7 @@ export function JobCard({ job, rank, isSelected, isSaved, onClick, onSave }: Pro
 
             {/* Relevance / match score — only shown when search returns it */}
             {job.rerankScore !== undefined && (
-              <span className="text-xs px-2 py-0.5 rounded-full font-medium text-white" style={{ background: '#059669' }}>
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium text-white" style={{ background: '#10b981' }}>
                 {Math.round(job.rerankScore * 100)}% match
               </span>
             )}
@@ -117,7 +117,7 @@ export function JobCard({ job, rank, isSelected, isSaved, onClick, onSave }: Pro
             title={isSaved ? 'Unsave job' : 'Save job'}
             className={`p-1.5 rounded-full transition-colors ${
               isSaved
-                ? 'text-blue-600 bg-blue-50'
+                ? 'text-indigo-600 bg-indigo-50'
                 : 'text-gray-300 hover:text-gray-500 hover:bg-gray-50'
             }`}
           >
@@ -130,8 +130,8 @@ export function JobCard({ job, rank, isSelected, isSaved, onClick, onSave }: Pro
           {/* View job / Apply button */}
           <button
             onClick={(e) => { e.stopPropagation(); onClick(); }}
-            className="text-xs font-semibold px-3 py-1.5 rounded-full border-2 transition-colors hover:bg-blue-50"
-            style={{ borderColor: '#1a56db', color: '#1a56db' }}
+            className="text-xs font-semibold px-3 py-1.5 rounded-full border-2 transition-colors hover:bg-indigo-50"
+            style={{ borderColor: '#6366f1', color: '#6366f1' }}
           >
             {isSelected ? 'Close' : 'View'}
           </button>
@@ -146,7 +146,7 @@ export function JobCard({ job, rank, isSelected, isSaved, onClick, onSave }: Pro
 function WorkModeBadge({ mode }: { mode: string }) {
   const map: Record<string, { bg: string; text: string; label: string }> = {
     remote:  { bg: '#dcfce7', text: '#16a34a', label: 'Remote'  },
-    on_site: { bg: '#dbeafe', text: '#1a56db', label: 'On-site' },
+    on_site: { bg: '#dbeafe', text: '#6366f1', label: 'On-site' },
     hybrid:  { bg: '#f3e8ff', text: '#7c3aed', label: 'Hybrid'  },
   };
   const s = map[mode] ?? { bg: '#f3f4f6', text: '#6b7280', label: mode };
