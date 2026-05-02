@@ -59,7 +59,7 @@ export function JobDetailDrawer({ job, isSaved, onSave, onClose }: Props) {
             {/* APPLY NOW — primary action (Sprint 5 will wire to real application) */}
             <button
               className="flex-1 py-2.5 rounded-full text-white font-semibold text-sm transition-all hover:opacity-90"
-              style={{ background: '#1a56db' }}
+              style={{ background: '#6366f1' }}
             >
               Apply now
             </button>
@@ -101,7 +101,7 @@ export function JobDetailDrawer({ job, isSaved, onSave, onClose }: Props) {
               <div className="flex flex-wrap gap-1.5">
                 {job.requiredSkills.split(',').map((s) => (
                   <span key={s.trim()} className="text-xs px-2.5 py-1 rounded-lg font-medium"
-                    style={{ background: '#eff6ff', color: '#1a56db' }}>
+                    style={{ background: '#f8f7ff', color: '#6366f1' }}>
                     {s.trim()}
                   </span>
                 ))}
@@ -130,7 +130,7 @@ export function JobDetailDrawer({ job, isSaved, onSave, onClose }: Props) {
 
           {/* ── APPLICATION TRACKING NOTE ── */}
           {/* Scope: Application lifecycle is implemented in Sprint 5 */}
-          <div className="rounded-xl p-3 text-xs text-blue-700 flex gap-2" style={{ background: '#eff6ff' }}>
+          <div className="rounded-xl p-3 text-xs text-blue-700 flex gap-2" style={{ background: '#f8f7ff' }}>
             <span>ℹ️</span>
             <span>After applying, you can track your application status (submitted, reviewed, accepted, rejected) in the <strong>My Applications</strong> tab.</span>
           </div>
@@ -138,7 +138,7 @@ export function JobDetailDrawer({ job, isSaved, onSave, onClose }: Props) {
           {/* Second apply button at bottom */}
           <button
             className="w-full py-2.5 rounded-full text-white font-semibold text-sm transition-all hover:opacity-90"
-            style={{ background: '#1a56db' }}
+            style={{ background: '#6366f1' }}
           >
             Apply now
           </button>
@@ -157,7 +157,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function InfoBadge({ icon, label, color }: { icon: string; label: string; color: 'blue' | 'purple' | 'green' }) {
   const map = {
-    blue:   { bg: '#eff6ff', text: '#1a56db' },
+    blue:   { bg: '#f8f7ff', text: '#6366f1' },
     purple: { bg: '#f5f3ff', text: '#7c3aed' },
     green:  { bg: '#f0fdf4', text: '#16a34a' },
   };
