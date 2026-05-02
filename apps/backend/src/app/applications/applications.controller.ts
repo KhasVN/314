@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
@@ -20,9 +21,15 @@ export class ApplicationsController {
     return this.applicationsService.create(createApplicationDto);
   }
 
+  // ── GET /api/applications ─────────────────────────────────────
+  // Returns a list of applications filtered by optional query params.
+  // Usage examples:
+  //   GET /api/applications                    → all applications
+  //   GET /api/applications?candidateId=xxx    → applications by a specific candidate
+  //   GET /api/applications?jobId=xxx          → applications for a specific job
   @Get()
-  findAll() {
-    return this.applicationsService.findAll();
+  findAll(@Query('candidateId') candidateId?: string, @Query('jobId') jobId?: string) {
+    return this.applicationsService.findAll({ candidateId, jobId });
   }
 
   @Get(':id')
