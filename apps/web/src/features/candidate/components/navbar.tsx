@@ -61,10 +61,6 @@ export function Navbar({ candidates, selectedCandidateId, onCandidateChange }: P
             Sign in
           </a>
 
-          {/* POST A JOB — links to admin dashboard */}
-          <a href="/" className="text-sm font-semibold px-4 py-1.5 rounded-full text-white transition-opacity hover:opacity-90 whitespace-nowrap" style={{ background: '#1a56db' }}>
-            Post a job
-          </a>
         </div>
 
       </div>
