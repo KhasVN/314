@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { EmployersService } from './employers.service';
 import { CreateEmployerDto } from './dto/create-employer.dto';
@@ -20,8 +21,11 @@ export class EmployersController {
     return this.employersService.create(createEmployerDto);
   }
 
+  // ── GET /api/employers → list all employers ──────────────
+  // ── GET /api/employers?search=query → search by name/job ─
   @Get()
-  findAll() {
+  findAll(@Query('search') search?: string) {
+    if (search) return this.employersService.search(search);
     return this.employersService.findAll();
   }
 
