@@ -34,6 +34,12 @@ export class EmployersController {
     return this.employersService.findOne(id);
   }
 
+  // ── GET /api/employers/:id/jobs → jobs by this employer ──
+  @Get(':id/jobs')
+  findJobs(@Param('id') id: string) {
+    return this.employersService.findJobs(id);
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,
