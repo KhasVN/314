@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { eq, or, ilike } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
-import { employerProfiles } from '../../db/domain-schema';
+import { employerProfiles, jobPostings } from '../../db/domain-schema';
 import { DatabaseService } from '../database/database.service';
 import { CreateEmployerDto } from './dto/create-employer.dto';
 import { UpdateEmployerDto } from './dto/update-employer.dto';
@@ -30,6 +30,47 @@ export class EmployersService {
     return this.database.db.select().from(employerProfiles);
   }
 
+  // ── SEARCH employers by company name OR job title ─────────
+  // Searches employer_profiles.company_name and job_postings.title
+  // using case-insensitive ILIKE matching (fuzzy search).
+  // Returns unique employers that match either field.
+  async search(query: string) {
+    if (!query?.trim()) return this.findAll();
+
+    const pattern = `%${query.trim()}%`;
+
+    // Search by company name directly
+    const byName = await this.database.db
+      .select()
+      .from(employerProfiles)
+      .where(
+        or(
+          ilike(employerProfiles.companyName, pattern),
+          ilike(employerProfiles.companyInfo, pattern),
+        )
+      );
+
+    // Search by job title — find employers who have matching job postings
+    const byJobTitle = await this.database.db
+      .select({ employer: employerProfiles })
+      .from(jobPostings)
+      .innerJoin(employerProfiles, eq(jobPostings.employerId, employerProfiles.id))
+      .where(ilike(jobPostings.title, pattern));
+
+    // Merge and deduplicate by employer id
+    const seen = new Set<string>();
+    const results = [...byName];
+    for (const row of byJobTitle) {
+      if (!seen.has(row.employer.id)) {
+        seen.add(row.employer.id);
+        if (!results.find(e => e.id === row.employer.id)) {
+          results.push(row.employer);
+        }
+      }
+    }
+    return results;
+  }
+  
   async findOne(id: string) {
     const [employer] = await this.database.db
       .select()
@@ -44,6 +85,14 @@ export class EmployersService {
     return employer;
   }
 
+  // Get all job postings for a specific employer
+  async findJobs(employerId: string) {
+    return this.database.db
+      .select()
+      .from(jobPostings)
+      .where(eq(jobPostings.employerId, employerId));
+  }
+  
   async update(id: string, updateEmployerDto: UpdateEmployerDto) {
     const [employer] = await this.database.db
       .update(employerProfiles)
