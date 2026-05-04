@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import { talentApi } from '../talent/api';
-import { Navbar }           from './components/navbar';
+import { CandidateNavbar } from '../candidate-shared/candidate-navbar';
 import { HeroSearch }       from './components/hero-search';
 import { FilterSidebar }    from './components/filter-sidebar';
 import { JobCard }          from './components/job-card';
@@ -111,11 +111,11 @@ export function CandidateHome() {
     <div className="min-h-screen" style={{ background: '#f8f7ff' }}>
 
       {/* NAVBAR */}
-      <Navbar
+      <CandidateNavbar
         candidates={allCandidates}
         selectedCandidateId={selectedCandidateId}
         onCandidateChange={setSelectedCandidateId}
-        onDeleteProfile={() => setShowDeleteModal(true)}
+        activePage="home"
       />
 
       {/* HERO SEARCH */}

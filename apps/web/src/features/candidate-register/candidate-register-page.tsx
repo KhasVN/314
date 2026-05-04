@@ -4,9 +4,15 @@
 // candidate-register-page.tsx
 // Theme: matches home page — white bg, indigo/purple gradients
 // Uses Better Auth signUp + saves candidate profile to DB
+//
+// DYNAMIC SKILLS:
+// Instead of a hardcoded list, skills are suggested based on
+// what the user types in the "Field of study / major" field.
+// The MAJOR_SKILLS_MAP maps keywords to relevant skill chips.
+// If no major matches, a general set of skills is shown.
 // ═══════════════════════════════════════════════════════════════
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { authClient } from '../../lib/auth-client';
 import { talentApi } from '../talent/api';
@@ -23,14 +29,112 @@ const EMPTY: Form = {
   workExperience: '', preferredLocations: '', preferredWorkMode: '',
 };
 
-const SKILLS_LIST = [
-  'Python', 'JavaScript', 'TypeScript', 'React', 'Node.js',
-  'SQL', 'PostgreSQL', 'MongoDB', 'Java', 'C++',
-  'Machine Learning', 'Data Analysis', 'Excel', 'Tableau',
-  'Project Management', 'Communication', 'Leadership',
-  'Marketing', 'Sales', 'Customer Service',
-  'Figma', 'UI/UX Design', 'Docker', 'AWS', 'Git',
-];
+// ── MAJOR → SKILLS MAPPING ────────────────────────────────────
+// Each key is a keyword to match against the user's typed major.
+// Skills are suggested dynamically — not hardcoded to one list.
+// Keywords are matched case-insensitively against the major field.
+const MAJOR_SKILLS_MAP: Record<string, string[]> = {
+  // ── Computer Science / Software Engineering ──
+  'computer science':   ['Python', 'JavaScript', 'TypeScript', 'React', 'Node.js', 'SQL', 'Git', 'Docker', 'AWS', 'Java', 'C++', 'Algorithms', 'Data Structures'],
+  'software':           ['Python', 'JavaScript', 'TypeScript', 'React', 'Node.js', 'Git', 'Docker', 'REST APIs', 'Agile', 'Testing', 'CI/CD'],
+  'information technology': ['Networking', 'Cybersecurity', 'Linux', 'Cloud Computing', 'AWS', 'Azure', 'SQL', 'IT Support', 'Docker', 'Python'],
+  'cybersecurity':      ['Network Security', 'Penetration Testing', 'Firewalls', 'Linux', 'Python', 'Cryptography', 'SIEM', 'Risk Assessment', 'Ethical Hacking'],
+  'web':                ['HTML', 'CSS', 'JavaScript', 'React', 'TypeScript', 'Node.js', 'REST APIs', 'Figma', 'Git', 'Responsive Design'],
+  'mobile':             ['React Native', 'Swift', 'Kotlin', 'Flutter', 'iOS', 'Android', 'Firebase', 'REST APIs', 'Git'],
+  'artificial intelligence': ['Python', 'Machine Learning', 'Deep Learning', 'TensorFlow', 'PyTorch', 'NLP', 'Computer Vision', 'Pandas', 'NumPy', 'Statistics'],
+  'machine learning':   ['Python', 'TensorFlow', 'PyTorch', 'Scikit-learn', 'Pandas', 'NumPy', 'Statistics', 'SQL', 'Data Visualisation', 'Deep Learning'],
+
+  // ── Data ──
+  'data science':       ['Python', 'R', 'SQL', 'Machine Learning', 'Pandas', 'NumPy', 'Tableau', 'Power BI', 'Statistics', 'Data Visualisation', 'Excel'],
+  'data analytics':     ['SQL', 'Excel', 'Tableau', 'Power BI', 'Python', 'R', 'Statistics', 'Data Visualisation', 'Google Analytics', 'ETL'],
+  'data engineering':   ['Python', 'SQL', 'Apache Spark', 'Kafka', 'Airflow', 'AWS', 'Azure', 'ETL', 'PostgreSQL', 'MongoDB', 'Docker'],
+  'database':           ['SQL', 'PostgreSQL', 'MySQL', 'MongoDB', 'Oracle', 'Database Design', 'Query Optimisation', 'ETL', 'Data Modelling'],
+  'statistics':         ['R', 'Python', 'SPSS', 'Stata', 'Excel', 'Statistical Modelling', 'Hypothesis Testing', 'Data Visualisation', 'SAS'],
+  'mathematics':        ['MATLAB', 'Python', 'R', 'Statistics', 'Linear Algebra', 'Calculus', 'Mathematical Modelling', 'Excel', 'LaTeX'],
+
+  // ── Business ──
+  'business':           ['Project Management', 'Leadership', 'Communication', 'Microsoft Office', 'Excel', 'PowerPoint', 'Business Analysis', 'Strategic Planning', 'CRM'],
+  'management':         ['Project Management', 'Leadership', 'Team Management', 'Budgeting', 'Strategic Planning', 'Communication', 'Problem Solving', 'CRM', 'Agile'],
+  'entrepreneurship':   ['Business Development', 'Pitching', 'Financial Planning', 'Marketing', 'Leadership', 'Networking', 'Product Management', 'Strategic Planning'],
+  'supply chain':       ['Logistics', 'SAP', 'Inventory Management', 'Procurement', 'Excel', 'Supply Chain Management', 'ERP', 'Data Analysis', 'Operations'],
+  'operations':         ['Process Improvement', 'Lean', 'Six Sigma', 'ERP', 'SAP', 'Excel', 'Supply Chain', 'Project Management', 'Budgeting'],
+  'project management': ['Agile', 'Scrum', 'JIRA', 'MS Project', 'Risk Management', 'Budgeting', 'Stakeholder Management', 'Leadership', 'Communication'],
+
+  // ── Finance / Accounting ──
+  'accounting':         ['Excel', 'MYOB', 'Xero', 'QuickBooks', 'Financial Reporting', 'Tax', 'Auditing', 'Bookkeeping', 'Financial Analysis', 'SAP'],
+  'finance':            ['Financial Analysis', 'Excel', 'Bloomberg', 'Financial Modelling', 'Valuation', 'Risk Management', 'Investment Analysis', 'Power BI', 'SQL'],
+  'economics':          ['Econometrics', 'R', 'Stata', 'Excel', 'Financial Analysis', 'Policy Analysis', 'Data Analysis', 'Statistics', 'Research'],
+  'actuarial':          ['Excel', 'R', 'Python', 'Statistics', 'Risk Modelling', 'SAS', 'Financial Maths', 'Actuarial Software', 'Data Analysis'],
+  'banking':            ['Financial Analysis', 'Risk Management', 'Excel', 'Bloomberg', 'Credit Analysis', 'AML', 'Compliance', 'Financial Modelling'],
+
+  // ── Marketing / Communication ──
+  'marketing':          ['Digital Marketing', 'SEO', 'SEM', 'Google Analytics', 'Social Media', 'Content Creation', 'Email Marketing', 'Adobe Creative Suite', 'HubSpot', 'Copywriting'],
+  'digital marketing':  ['SEO', 'SEM', 'Google Ads', 'Facebook Ads', 'Google Analytics', 'Content Marketing', 'Email Marketing', 'HubSpot', 'Social Media Management'],
+  'communication':      ['Copywriting', 'Public Relations', 'Media Relations', 'Social Media', 'Content Creation', 'Presentation', 'Journalism', 'Adobe Creative Suite'],
+  'public relations':   ['Media Relations', 'Copywriting', 'Press Releases', 'Crisis Management', 'Social Media', 'Stakeholder Engagement', 'Event Management'],
+  'journalism':         ['Writing', 'Research', 'Interviewing', 'Editing', 'Social Media', 'Video Production', 'Photography', 'CMS', 'Content Management'],
+  'advertising':        ['Creative Strategy', 'Copywriting', 'Adobe Creative Suite', 'Social Media', 'Campaign Management', 'Market Research', 'Analytics'],
+
+  // ── Design ──
+  'design':             ['Figma', 'Adobe Photoshop', 'Illustrator', 'InDesign', 'UI/UX Design', 'Wireframing', 'Prototyping', 'Typography', 'Branding'],
+  'graphic design':     ['Adobe Photoshop', 'Illustrator', 'InDesign', 'Figma', 'Typography', 'Branding', 'Print Design', 'Motion Graphics', 'Canva'],
+  'ux':                 ['Figma', 'User Research', 'Wireframing', 'Prototyping', 'Usability Testing', 'Information Architecture', 'Adobe XD', 'Design Thinking'],
+  'ui':                 ['Figma', 'Adobe XD', 'HTML', 'CSS', 'JavaScript', 'Wireframing', 'Prototyping', 'Design Systems', 'Responsive Design'],
+  'fashion':            ['Trend Forecasting', 'Garment Construction', 'Adobe Illustrator', 'Pattern Making', 'Textile Knowledge', 'Fashion Styling', 'Merchandising'],
+  'architecture':       ['AutoCAD', 'Revit', 'SketchUp', '3ds Max', 'Rhino', 'Adobe Creative Suite', 'BIM', 'Building Codes', 'Project Management'],
+
+  // ── Engineering ──
+  'engineering':        ['CAD', 'AutoCAD', 'Project Management', 'MATLAB', 'Python', 'Problem Solving', 'Technical Drawing', 'Quality Control', 'Safety Management'],
+  'mechanical':         ['AutoCAD', 'SolidWorks', 'MATLAB', 'FEA', 'Thermodynamics', 'Manufacturing', 'CAD/CAM', 'Project Management', 'Quality Control'],
+  'electrical':         ['Circuit Design', 'MATLAB', 'AutoCAD', 'PLC', 'Power Systems', 'Embedded Systems', 'C++', 'Signal Processing', 'PCB Design'],
+  'civil':              ['AutoCAD', 'Revit', 'Structural Analysis', 'Project Management', 'Concrete Design', 'Geotechnical', 'CAD', 'BIM', 'Cost Estimation'],
+  'chemical':           ['Process Design', 'MATLAB', 'Aspen Plus', 'Laboratory Skills', 'Safety Management', 'Chemical Analysis', 'Quality Control', 'R&D'],
+  'biomedical':         ['MATLAB', 'Medical Device Knowledge', 'Laboratory Skills', 'Python', 'Biostatistics', 'Regulatory Affairs', 'Research', 'Clinical Trials'],
+  'environmental':      ['Environmental Impact Assessment', 'GIS', 'AutoCAD', 'Data Analysis', 'Report Writing', 'Field Work', 'Sustainability', 'Compliance'],
+
+  // ── Health / Science ──
+  'nursing':            ['Patient Care', 'Clinical Assessment', 'Medical Records', 'Medication Administration', 'Teamwork', 'Communication', 'Emergency Response'],
+  'medicine':           ['Clinical Skills', 'Patient Assessment', 'Medical Research', 'Diagnostic Skills', 'Communication', 'Teamwork', 'Evidence-Based Practice'],
+  'psychology':         ['Counselling', 'Research Methods', 'SPSS', 'Assessment Tools', 'Report Writing', 'Active Listening', 'CBT', 'Case Management'],
+  'biology':            ['Laboratory Skills', 'PCR', 'Cell Culture', 'Microscopy', 'Data Analysis', 'Research', 'Scientific Writing', 'Python', 'SPSS'],
+  'chemistry':          ['Laboratory Skills', 'Analytical Chemistry', 'HPLC', 'GC-MS', 'NMR', 'Research', 'Data Analysis', 'Scientific Writing', 'Safety'],
+  'pharmacy':           ['Pharmacology', 'Drug Dispensing', 'Patient Counselling', 'Medical Terminology', 'Regulatory Affairs', 'Research', 'Quality Assurance'],
+  'public health':      ['Epidemiology', 'Health Promotion', 'Research Methods', 'SPSS', 'Policy Analysis', 'Data Analysis', 'Program Evaluation', 'Communication'],
+  'nutrition':          ['Nutritional Assessment', 'Meal Planning', 'Research', 'Client Education', 'Food Science', 'Health Promotion', 'Data Analysis'],
+
+  // ── Education ──
+  'education':          ['Curriculum Development', 'Classroom Management', 'Assessment', 'Communication', 'Lesson Planning', 'Learning Management Systems', 'Differentiated Instruction'],
+  'teaching':           ['Lesson Planning', 'Curriculum Design', 'Classroom Management', 'Assessment', 'Student Engagement', 'Communication', 'Digital Literacy'],
+
+  // ── Law ──
+  'law':                ['Legal Research', 'Contract Drafting', 'Negotiation', 'Legal Writing', 'Compliance', 'Case Management', 'Microsoft Word', 'Attention to Detail'],
+  'legal':              ['Legal Research', 'Contract Review', 'Compliance', 'Legal Writing', 'Due Diligence', 'Negotiation', 'Corporate Law', 'Litigation Support'],
+
+  // ── Hospitality / Tourism ──
+  'hospitality':        ['Customer Service', 'Event Management', 'Food & Beverage', 'Hotel Management', 'Reservations Systems', 'Communication', 'Teamwork', 'Revenue Management'],
+  'tourism':            ['Customer Service', 'Travel Planning', 'GDS Systems', 'Communication', 'Cultural Awareness', 'Sales', 'Event Management', 'Marketing'],
+
+  // ── Human Resources ──
+  'human resources':    ['Recruitment', 'Onboarding', 'Performance Management', 'Employee Relations', 'HRIS', 'Payroll', 'Compliance', 'Training & Development', 'Communication'],
+  'hr':                 ['Recruitment', 'Onboarding', 'Performance Management', 'Employee Relations', 'HRIS', 'Payroll', 'Compliance', 'Training & Development'],
+
+  // ── General fallback ──
+  'general':            ['Communication', 'Problem Solving', 'Teamwork', 'Microsoft Office', 'Time Management', 'Critical Thinking', 'Leadership', 'Adaptability', 'Customer Service'],
+};
+
+// ── HELPER: Get suggested skills from major input ─────────────
+// Searches MAJOR_SKILLS_MAP keys for partial keyword matches.
+// Returns the first matched skill list, or general skills if
+// no match found. Case-insensitive matching.
+function getSuggestedSkills(major: string): string[] {
+  if (!major.trim()) return MAJOR_SKILLS_MAP['general'];
+  const lower = major.toLowerCase();
+  for (const [keyword, skills] of Object.entries(MAJOR_SKILLS_MAP)) {
+    if (lower.includes(keyword)) return skills;
+  }
+  // No exact match — return general skills
+  return MAJOR_SKILLS_MAP['general'];
+}
 
 export function CandidateRegisterPage() {
   const router = useRouter();
@@ -40,7 +144,15 @@ export function CandidateRegisterPage() {
   const [loading, setLoading]    = useState(false);
   const [error, setError]        = useState('');
   const [done, setDone]          = useState(false);
-  const [step, setStep]          = useState(1); // 1=account, 2=profile, 3=skills+prefs
+  const [step, setStep]          = useState(1);
+
+  // ── DYNAMIC SKILLS LIST ───────────────────────────────────────
+  // Re-computed every time the major field changes.
+  // useMemo ensures it only recalculates when form.major changes.
+  const suggestedSkills = useMemo(
+    () => getSuggestedSkills(form.major),
+    [form.major]
+  );
 
   const set = (f: keyof Form, v: string) => { setForm(p => ({...p, [f]: v})); setError(''); };
   const toggleSkill = (s: string) => setSkills(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
@@ -63,7 +175,6 @@ export function CandidateRegisterPage() {
     setLoading(true);
     setError('');
     try {
-      // Step 1: Create auth account
       const auth = await authClient.signUp.email({
         name: form.fullName.trim(),
         email: form.email.trim().toLowerCase(),
@@ -77,7 +188,6 @@ export function CandidateRegisterPage() {
       const userId = auth.data?.user?.id ?? (auth.data as any)?.id;
       if (!userId) { setError('Could not get user ID. Please try again.'); return; }
 
-      // Step 2: Save candidate profile
       await talentApi.candidates.create({
         userId,
         fullName:           form.fullName.trim(),
@@ -119,7 +229,6 @@ export function CandidateRegisterPage() {
     </div>
   );
 
-  // ── MAIN FORM ─────────────────────────────────────────────────
   return (
     <div style={{ minHeight: '100vh', background: '#ffffff', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
 
@@ -146,21 +255,12 @@ export function CandidateRegisterPage() {
         <h1 style={{ fontSize: 28, fontWeight: 900, color: '#0f172a', margin: '0 0 8px', letterSpacing: '-0.5px' }}>Create your profile</h1>
         <p style={{ fontSize: 15, color: '#64748b', margin: '0 0 28px' }}>Fill in your details to start getting matched with jobs</p>
 
-        {/* Step progress bar */}
+        {/* Step progress */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 32 }}>
-          {[
-            { n: 1, label: 'Account' },
-            { n: 2, label: 'Profile' },
-            { n: 3, label: 'Skills' },
-          ].map(s => (
+          {[{ n: 1, label: 'Account' }, { n: 2, label: 'Profile' }, { n: 3, label: 'Skills' }].map(s => (
             <div key={s.n} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 12, fontWeight: 700,
-                  background: step > s.n ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : step === s.n ? '#6366f1' : '#f1f5f9',
-                  color: step >= s.n ? '#fff' : '#9ca3af',
-                }}>
+                <div style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, background: step > s.n ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : step === s.n ? '#6366f1' : '#f1f5f9', color: step >= s.n ? '#fff' : '#9ca3af' }}>
                   {step > s.n ? '✓' : s.n}
                 </div>
                 <span style={{ fontSize: 12, fontWeight: 600, color: step >= s.n ? '#6366f1' : '#9ca3af' }}>{s.label}</span>
@@ -188,10 +288,8 @@ export function CandidateRegisterPage() {
                 <input style={inp} type="password" placeholder="Create a strong password" value={form.password} onChange={e => set('password', e.target.value)}/>
               </Field>
               <Field label="Confirm password" required>
-                <input style={{
-                  ...inp,
-                  borderColor: form.confirmPassword && form.password !== form.confirmPassword ? '#ef4444' : '#e5e7eb',
-                }} type="password" placeholder="Re-enter your password" value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)}/>
+                <input style={{ ...inp, borderColor: form.confirmPassword && form.password !== form.confirmPassword ? '#ef4444' : '#e5e7eb' }}
+                  type="password" placeholder="Re-enter your password" value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)}/>
                 {form.confirmPassword && form.password !== form.confirmPassword && (
                   <p style={{ fontSize: 12, color: '#ef4444', margin: '4px 0 0' }}>Passwords do not match</p>
                 )}
@@ -214,8 +312,20 @@ export function CandidateRegisterPage() {
                     <option value="other">Other</option>
                   </select>
                 </Field>
-                <Field label="Field of study / major">
-                  <input style={inp} placeholder="e.g. Computer Science, Business" value={form.major} onChange={e => set('major', e.target.value)}/>
+
+                {/* MAJOR INPUT — typing here updates skill suggestions in Step 3 */}
+                <Field label="Field of study / major" hint="Type your major and we'll suggest relevant skills in the next step">
+                  <input style={inp} placeholder="e.g. Computer Science, Accounting, Marketing"
+                    value={form.major} onChange={e => set('major', e.target.value)}/>
+                  {/* Live preview of matched skills category */}
+                  {form.major.trim() && (
+                    <div style={{ marginTop: 8, padding: '8px 12px', background: '#f8f7ff', borderRadius: 8, border: '1px solid #e0e7ff', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 12 }}>✨</span>
+                      <p style={{ fontSize: 12, color: '#6366f1', margin: 0, fontWeight: 500 }}>
+                        We'll suggest <strong>{getSuggestedSkills(form.major).length} skills</strong> for <strong>{form.major}</strong> in the next step
+                      </p>
+                    </div>
+                  )}
                 </Field>
               </FormCard>
 
@@ -245,28 +355,58 @@ export function CandidateRegisterPage() {
           {step === 3 && (
             <>
               <FormCard title="Skills" icon="⚡">
-                <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 12px' }}>Click to select your skills</p>
+
+                {/* Dynamic skills header — shows which major drove the suggestions */}
+                <div style={{ marginBottom: 12 }}>
+                  {form.major.trim() ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                      <span style={{ fontSize: 13, color: '#64748b' }}>
+                        Suggested skills for
+                      </span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: '#6366f1', background: '#ede9fe', padding: '2px 10px', borderRadius: 9999 }}>
+                        {form.major}
+                      </span>
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: 13, color: '#64748b', margin: '0 0 10px' }}>
+                      General skills — go back and enter your major for personalised suggestions
+                    </p>
+                  )}
+                  <p style={{ fontSize: 12, color: '#9ca3af', margin: 0 }}>
+                    Click to select · You can also add custom skills below
+                  </p>
+                </div>
+
+                {/* DYNAMIC skill chips — change based on form.major */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-                  {SKILLS_LIST.map(s => (
+                  {suggestedSkills.map(s => (
                     <button key={s} type="button" onClick={() => toggleSkill(s)} style={{
-                      padding: '5px 13px', borderRadius: 9999, fontSize: 13, fontWeight: 500, cursor: 'pointer', border: '1.5px solid',
+                      padding: '5px 13px', borderRadius: 9999, fontSize: 13, fontWeight: 500,
+                      cursor: 'pointer', border: '1.5px solid',
                       background: skills.includes(s) ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : '#fff',
                       color: skills.includes(s) ? '#fff' : '#374151',
                       borderColor: skills.includes(s) ? '#6366f1' : '#e5e7eb',
+                      transition: 'all 0.15s',
                     }}>
                       {skills.includes(s) ? '✓ ' : '+ '}{s}
                     </button>
                   ))}
                 </div>
+
+                {/* Custom skill input */}
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <input style={{ ...inp, flex: 1 }} placeholder="Add custom skill..."
+                  <input style={{ ...inp, flex: 1 }} placeholder="Add a skill not listed above..."
                     value={customSkill} onChange={e => setCustom(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustom())}/>
                   <button type="button" onClick={addCustom} style={{ padding: '0 16px', borderRadius: 10, background: '#f1f5f9', border: '1px solid #e5e7eb', fontWeight: 600, cursor: 'pointer', fontSize: 13, color: '#374151' }}>Add</button>
                 </div>
+
+                {/* Selected skills display */}
                 {skills.length > 0 && (
                   <div style={{ marginTop: 10, padding: 12, background: '#f8f7ff', borderRadius: 12, border: '1px solid #e0e7ff' }}>
-                    <p style={{ fontSize: 12, color: '#6366f1', fontWeight: 700, margin: '0 0 8px' }}>Selected ({skills.length}):</p>
+                    <p style={{ fontSize: 12, color: '#6366f1', fontWeight: 700, margin: '0 0 8px' }}>
+                      Selected ({skills.length}):
+                    </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                       {skills.map(s => (
                         <span key={s} style={{ padding: '3px 10px', borderRadius: 9999, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -293,12 +433,7 @@ export function CandidateRegisterPage() {
                     ].map(o => (
                       <button key={o.v} type="button"
                         onClick={() => set('preferredWorkMode', form.preferredWorkMode === o.v ? '' : o.v)}
-                        style={{
-                          flex: 1, padding: '12px 8px', borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: 'pointer', border: '2px solid',
-                          background: form.preferredWorkMode === o.v ? o.bg : '#fff',
-                          color: form.preferredWorkMode === o.v ? o.c : '#6b7280',
-                          borderColor: form.preferredWorkMode === o.v ? o.border : '#e5e7eb',
-                        }}>
+                        style={{ flex: 1, padding: '12px 8px', borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: 'pointer', border: '2px solid', background: form.preferredWorkMode === o.v ? o.bg : '#fff', color: form.preferredWorkMode === o.v ? o.c : '#6b7280', borderColor: form.preferredWorkMode === o.v ? o.border : '#e5e7eb' }}>
                         {o.l}
                       </button>
                     ))}
@@ -315,7 +450,7 @@ export function CandidateRegisterPage() {
             </div>
           )}
 
-          {/* Navigation buttons */}
+          {/* Navigation */}
           <div style={{ display: 'flex', gap: 12 }}>
             {step > 1 && (
               <button type="button" onClick={() => setStep(s => s - 1)}
@@ -323,12 +458,7 @@ export function CandidateRegisterPage() {
                 ← Back
               </button>
             )}
-            <button type="submit" disabled={loading} style={{
-              flex: 1, padding: '13px', borderRadius: 12, border: 'none',
-              background: loading ? '#c4b5fd' : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-              color: '#fff', fontSize: 15, fontWeight: 700,
-              cursor: loading ? 'not-allowed' : 'pointer',
-            }}>
+            <button type="submit" disabled={loading} style={{ flex: 1, padding: '13px', borderRadius: 12, border: 'none', background: loading ? '#c4b5fd' : 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer' }}>
               {loading ? 'Creating account...' : step < 3 ? 'Continue →' : 'Create my account →'}
             </button>
           </div>
