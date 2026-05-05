@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
+import type { JobSearchQueryDto } from '@talent-matching/dtos';
 import { jobPostings } from '../../db/domain-schema';
 import { AiService } from '../ai/ai.service';
 import { buildSearchText } from '../ai/search-text';
@@ -114,16 +115,16 @@ export class JobsService {
     return job;
   }
 
-  search(query: Record<string, string | undefined>) {
+  search(query: JobSearchQueryDto) {
     return this.searchService.searchJobs({
       query: query.query,
       candidateId: query.candidateId,
-      workMode: query.workMode as any,
+      workMode: query.workMode,
       location: query.location,
-      requiredEducation: query.requiredEducation as any,
-      yearsOfExperience: this.optionalNumber(query.yearsOfExperience),
-      limit: this.optionalNumber(query.limit),
-      rerank: query.rerank === 'true',
+      requiredEducation: query.requiredEducation,
+      yearsOfExperience: query.yearsOfExperience,
+      limit: query.limit,
+      rerank: query.rerank ?? false,
     });
   }
 
@@ -152,12 +153,4 @@ export class JobsService {
     }
   }
 
-  private optionalNumber(value: string | undefined) {
-    if (!value) {
-      return undefined;
-    }
-
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : undefined;
-  }
 }

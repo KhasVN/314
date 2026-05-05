@@ -19,6 +19,42 @@ export const applicationStatuses = [
   'accepted',
 ] as const;
 
+const optionalBooleanQuerySchema = z.preprocess((value) => {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['true', '1', 'yes'].includes(normalized)) {
+      return true;
+    }
+    if (['false', '0', 'no'].includes(normalized)) {
+      return false;
+    }
+  }
+
+  return value;
+}, z.boolean().optional());
+
+const optionalNonNegativeIntQuerySchema = z.preprocess((value) => {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+  return value;
+}, z.coerce.number().int().nonnegative().optional());
+
+const optionalPositiveIntQuerySchema = z.preprocess((value) => {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+  return value;
+}, z.coerce.number().int().positive().optional());
+
 export const educationLevelSchema = z.enum(educationLevels);
 export const workModeSchema = z.enum(workModes);
 export const jobStatusSchema = z.enum(jobStatuses);
@@ -100,9 +136,9 @@ export const jobSearchQuerySchema = z.object({
   workMode: workModeSchema.optional(),
   location: z.string().optional(),
   requiredEducation: educationLevelSchema.optional(),
-  yearsOfExperience: z.coerce.number().int().nonnegative().optional(),
-  limit: z.coerce.number().int().positive().optional(),
-  rerank: z.coerce.boolean().optional(),
+  yearsOfExperience: optionalNonNegativeIntQuerySchema,
+  limit: optionalPositiveIntQuerySchema,
+  rerank: optionalBooleanQuerySchema,
 });
 
 export const candidateSearchQuerySchema = z.object({
@@ -111,9 +147,9 @@ export const candidateSearchQuerySchema = z.object({
   education: educationLevelSchema.optional(),
   location: z.string().optional(),
   workMode: workModeSchema.optional(),
-  minYearsOfExperience: z.coerce.number().int().nonnegative().optional(),
-  limit: z.coerce.number().int().positive().optional(),
-  rerank: z.coerce.boolean().optional(),
+  minYearsOfExperience: optionalNonNegativeIntQuerySchema,
+  limit: optionalPositiveIntQuerySchema,
+  rerank: optionalBooleanQuerySchema,
 });
 
 export type EducationLevel = z.infer<typeof educationLevelSchema>;

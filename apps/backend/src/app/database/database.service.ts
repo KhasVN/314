@@ -1,9 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
 @Injectable()
-export class DatabaseService {
+export class DatabaseService implements OnModuleDestroy {
   private readonly logger = new Logger(DatabaseService.name);
   private vectorSupport: boolean | undefined;
 
@@ -29,8 +29,13 @@ export class DatabaseService {
     return this.vectorSupport;
   }
 
+  async onModuleDestroy() {
+    await this.pool.end();
+  }
 }
 
 function messageFrom(error: unknown) {
-  return error instanceof Error ? error.message : 'Database capability check failed';
+  return error instanceof Error
+    ? error.message
+    : 'Database capability check failed';
 }

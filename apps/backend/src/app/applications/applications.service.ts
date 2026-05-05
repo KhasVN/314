@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { jobApplications } from '../../db/domain-schema';
 import { DatabaseService } from '../database/database.service';
@@ -32,12 +32,17 @@ export class ApplicationsService {
   // If neither is provided     → returns all applications in the database
   findAll(filters?: { candidateId?: string; jobId?: string }) {
     const query = this.database.db.select().from(jobApplications);
-    if (filters?.candidateId) {
-      return query.where(eq(jobApplications.candidateId, filters.candidateId));
+    const conditions = [
+      filters?.candidateId
+        ? eq(jobApplications.candidateId, filters.candidateId)
+        : undefined,
+      filters?.jobId ? eq(jobApplications.jobId, filters.jobId) : undefined,
+    ].filter(Boolean);
+
+    if (conditions.length > 0) {
+      return query.where(and(...conditions));
     }
-    if (filters?.jobId) {
-      return query.where(eq(jobApplications.jobId, filters.jobId));
-    }
+
     return query;
   }
 

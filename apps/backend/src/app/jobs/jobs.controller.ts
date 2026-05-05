@@ -7,17 +7,27 @@ import {
   Param,
   Delete,
   Query,
+  ParseUUIDPipe,
 } from '@nestjs/common';
+import {
+  createJobSchema,
+  jobSearchQuerySchema,
+  type JobSearchQueryDto,
+} from '@talent-matching/dtos';
+import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
+import { updateJobSchema } from './dto/update-job.dto';
 
 @Controller('jobs')
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 
   @Post()
-  create(@Body() createJobDto: CreateJobDto) {
+  create(
+    @Body(new ZodValidationPipe(createJobSchema)) createJobDto: CreateJobDto,
+  ) {
     return this.jobsService.create(createJobDto);
   }
 
@@ -27,22 +37,28 @@ export class JobsController {
   }
 
   @Get('search')
-  search(@Query() query: Record<string, string | undefined>) {
+  search(
+    @Query(new ZodValidationPipe(jobSearchQuerySchema))
+    query: JobSearchQueryDto,
+  ) {
     return this.jobsService.search(query);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.jobsService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateJobDto: UpdateJobDto) {
+  update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(updateJobSchema)) updateJobDto: UpdateJobDto,
+  ) {
     return this.jobsService.update(id, updateJobDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.jobsService.remove(id);
   }
 }

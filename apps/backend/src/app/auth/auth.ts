@@ -9,7 +9,7 @@ const trustedOrigins = (process.env.WEB_ORIGIN ?? 'http://localhost:3000')
   .filter(Boolean);
 
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:4000',
+  baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:4000/api/auth',
   trustedOrigins,
   database: drizzleAdapter(db, {
     provider: 'pg',
