@@ -132,7 +132,7 @@ export function CompanyReviewsPage() {
             {isLoading && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[1,2,3].map(i => (
-                  <div key={i} style={{ background: '#fff', borderRadius: 14, padding: 20, border: '1.5px solid #e0e7ff', animate: 'pulse' }}>
+                  <div key={i} style={{ background: '#fff', borderRadius: 14, padding: 20, border: '1.5px solid #e0e7ff' }}>
                     <div style={{ height: 16, background: '#f1f5f9', borderRadius: 8, width: '60%', marginBottom: 10 }}/>
                     <div style={{ height: 12, background: '#f8fafc', borderRadius: 8, width: '40%' }}/>
                   </div>
