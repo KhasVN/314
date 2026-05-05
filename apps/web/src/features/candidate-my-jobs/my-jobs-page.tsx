@@ -332,7 +332,7 @@ function JobCard({ job, status, children }: { job?: JobDto; status?: string; app
     <div style={{ background: '#fff', borderRadius: 16, border: '1.5px solid #e0e7ff', padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: 12, color: '#9ca3af', margin: '0 0 4px', truncate: 'true' }}>{job?.companyInfo ?? 'Company'}</p>
+          <p style={{ fontSize: 12, color: '#9ca3af', margin: '0 0 4px'}}>{job?.companyInfo ?? 'Company'}</p>
           <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', margin: '0 0 6px' }}>{job?.title ?? 'Loading...'}</h3>
           {job?.location && <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 8px' }}>📍 {job.location}</p>}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
