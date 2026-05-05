@@ -76,7 +76,7 @@ export function CreateJobPage() {
         description:       form.description.trim(),
         requiredEducation:    (form.educationLevel as any) || undefined,
         requiredSkills:    skills.length > 0 ? skills.join(', ') : undefined,
-        yearsOfExperience: form.yearsOfExperience ? parseInt(form.yearsOfExperience) : undefined,
+        requiredYearsOfExperience: form.yearsOfExperience ? parseInt(form.yearsOfExperience) : undefined,
         workMode:          form.workMode as any,
         location:          form.location.trim(),
       });
