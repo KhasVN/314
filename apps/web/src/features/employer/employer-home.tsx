@@ -71,9 +71,8 @@ export function EmployerHome() {
     const params: CandidateSearchQueryDto = {};
     if (keyword.trim())  params.query     = keyword.trim();
     if (education)       params.education = education as any;
-    if (workMode)        params.preferredWorkMode = workMode as any;
-    if (minExp)          params.minExperience = parseInt(minExp);
-    if (maxExp)          params.maxExperience = parseInt(maxExp);
+    if (workMode)        params.workMode = workMode as any;
+    if (minExp)          params.minYearsOfExperience = parseInt(minExp);
     setSearchParams(params);
     setActiveTab('all');
     setSelectedCandidate(null);
