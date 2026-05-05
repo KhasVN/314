@@ -37,7 +37,7 @@ export function HomePage() {
           <nav style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <a href="/candidate" style={{ fontSize: 14, color: '#6b7280', textDecoration: 'none', padding: '7px 14px', borderRadius: 8, fontWeight: 500 }}>Browse jobs</a>
             <a href="/candidate/register" style={{ fontSize: 14, color: '#6b7280', textDecoration: 'none', padding: '7px 14px', borderRadius: 8, fontWeight: 500 }}>Register</a>
-            <a href="/candidate/login" style={{ fontSize: 14, fontWeight: 600, color: '#6366f1', background: '#ede9fe', padding: '8px 18px', borderRadius: 10, textDecoration: 'none', marginLeft: 8 }}>Candidate sign in</a><a href="/" style={{ fontSize: 14, fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, #10b981, #059669)', padding: '8px 18px', borderRadius: 10, textDecoration: 'none', marginLeft: 8 }}>Employer sign in</a>
+            <a href="/candidate/login" style={{ fontSize: 14, fontWeight: 600, color: '#6366f1', background: '#ede9fe', padding: '8px 18px', borderRadius: 10, textDecoration: 'none', marginLeft: 8 }}>Candidate sign in</a><a href="/employer/login" style={{ fontSize: 14, fontWeight: 600, color: '#fff', background: 'linear-gradient(135deg, #10b981, #059669)', padding: '8px 18px', borderRadius: 10, textDecoration: 'none', marginLeft: 8 }}>Employer sign in</a>
           </nav>
 
         </div>
