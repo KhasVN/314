@@ -74,7 +74,7 @@ export function CreateJobPage() {
         employerId:        form.employerId,
         title:             form.title.trim(),
         description:       form.description.trim(),
-        educationLevel:    (form.educationLevel as any) || undefined,
+        requiredEducation:    (form.educationLevel as any) || undefined,
         requiredSkills:    skills.length > 0 ? skills.join(', ') : undefined,
         yearsOfExperience: form.yearsOfExperience ? parseInt(form.yearsOfExperience) : undefined,
         workMode:          form.workMode as any,
