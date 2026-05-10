@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import useSWR from 'swr';
-import { talentApi } from '@features/talent/api';
+import { talentApi } from '../../api';
 import {
   CheckboxInput,
   CrudSurface,

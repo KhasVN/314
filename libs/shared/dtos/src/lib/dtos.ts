@@ -143,7 +143,8 @@ export const jobSearchQuerySchema = z.object({
 
 export const candidateSearchQuerySchema = z.object({
   query: z.string().optional(),
-  jobId: z.string().optional(),
+  jobId: z.string().uuid().optional(),
+  employerId: z.string().uuid().optional(),
   education: educationLevelSchema.optional(),
   location: z.string().optional(),
   workMode: workModeSchema.optional(),

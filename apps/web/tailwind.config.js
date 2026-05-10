@@ -10,6 +10,25 @@ module.exports = {
   daisyui: {
     themes: [
       {
+        indeed: {
+          primary: '#2557a7',
+          secondary: '#164081',
+          accent: '#2557a7',
+          neutral: '#2d2d2d',
+          'base-100': '#ffffff',
+          'base-200': '#f3f2f1',
+          'base-300': '#d4d2d0',
+          'base-content': '#2d2d2d',
+          info: '#2557a7',
+          success: '#057642',
+          warning: '#f3c621',
+          error: '#c9262d',
+          '--rounded-box': '0.75rem',
+          '--rounded-btn': '0.5rem',
+          '--border-btn': '1px',
+        },
+      },
+      {
         talent: {
           primary: '#040415',
           secondary: '#c8e4f6',

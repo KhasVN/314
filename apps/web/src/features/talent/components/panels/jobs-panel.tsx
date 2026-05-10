@@ -1,7 +1,7 @@
 import type { EducationLevel, EmployerDto, JobDto, WorkMode } from '@talent-matching/dtos';
 import { useState } from 'react';
 import useSWR from 'swr';
-import { talentApi } from '@features/talent/api';
+import { talentApi } from '../../api';
 import { enumValue, numberOrNull } from '@features/talent/utils';
 import { CrudSurface, FormActions, RowActions, SelectInput, SimpleTable, TextArea, TextInput } from '@components/form-controls';
 
