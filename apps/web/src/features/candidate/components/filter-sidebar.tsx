@@ -1,102 +1,206 @@
 'use client';
 
-// filter-sidebar.tsx — matches home page theme
-// White card with indigo/purple accents
-
 import { useState } from 'react';
 import type { JobSearchQueryDto } from '@talent-matching/dtos';
 
-type Props = { onFilter: (params: JobSearchQueryDto) => void; };
+type Props = { onFilter: (params: JobSearchQueryDto | null) => void };
+
+const WORK_MODES: Array<{ value: NonNullable<JobSearchQueryDto['workMode']>; label: string }> = [
+  { value: 'remote', label: 'Remote' },
+  { value: 'hybrid', label: 'Hybrid' },
+  { value: 'on_site', label: 'On-site' },
+];
+
+const EDUCATION_LEVELS: Array<{
+  value: NonNullable<JobSearchQueryDto['requiredEducation']>;
+  label: string;
+}> = [
+  { value: 'high_school', label: 'High school' },
+  { value: 'diploma', label: 'Diploma' },
+  { value: 'bachelor', label: 'Bachelor' },
+  { value: 'master', label: 'Master' },
+  { value: 'phd', label: 'PhD' },
+  { value: 'other', label: 'Other' },
+];
+
+const EXPERIENCE_LEVELS = [
+  { value: '', label: 'Any experience' },
+  { value: '0', label: 'Entry level' },
+  { value: '2', label: '2+ years' },
+  { value: '5', label: '5+ years' },
+  { value: '10', label: '10+ years' },
+];
 
 export function FilterSidebar({ onFilter }: Props) {
-  const [workMode,  setWorkMode]  = useState('');
+  const [workMode, setWorkMode] = useState('');
   const [education, setEducation] = useState('');
-  const [minYears,  setMinYears]  = useState('');
+  const [minYears, setMinYears] = useState('');
 
   const apply = (wm = workMode, edu = education, yrs = minYears) => {
-    onFilter({
-      workMode:          (wm  as JobSearchQueryDto['workMode'])          || undefined,
+    const params: JobSearchQueryDto = {
+      workMode: (wm as JobSearchQueryDto['workMode']) || undefined,
       requiredEducation: (edu as JobSearchQueryDto['requiredEducation']) || undefined,
       yearsOfExperience: yrs ? Number(yrs) : undefined,
       limit: 100,
-    });
+    };
+    const hasActiveFilter = Boolean(params.workMode || params.requiredEducation || params.yearsOfExperience !== undefined);
+    onFilter(hasActiveFilter ? params : null);
   };
 
-  const reset = () => { setWorkMode(''); setEducation(''); setMinYears(''); onFilter({ limit: 100 }); };
+  const reset = () => {
+    setWorkMode('');
+    setEducation('');
+    setMinYears('');
+    onFilter(null);
+  };
+
+  const activeCount = [workMode, education, minYears].filter(Boolean).length;
+  const workModeLabel = WORK_MODES.find((mode) => mode.value === workMode)?.label;
+  const educationLabel = EDUCATION_LEVELS.find((level) => level.value === education)?.label;
+  const experienceLabel = EXPERIENCE_LEVELS.find((level) => level.value === minYears)?.label;
 
   return (
-    <aside style={{ display: 'none' }} className="lg-sidebar">
-      <style>{`@media(min-width:1024px){.lg-sidebar{display:block!important}}`}</style>
-      <div style={{ width: 220, background: '#fff', borderRadius: 20, padding: 20, border: '1.5px solid #e0e7ff', position: 'sticky', top: 80, fontFamily: 'system-ui, sans-serif' }}>
-
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: '#0f172a', margin: 0 }}>Filters</h2>
-          <button onClick={reset} style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Reset all</button>
-        </div>
-
-        {/* WORK MODE */}
-        <div style={{ marginBottom: 20 }}>
-          <h3 style={{ fontSize: 11, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>Work mode</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {[
-              { value: '',        label: 'Any mode',  dot: '#d1d5db' },
-              { value: 'remote',  label: 'Remote',    dot: '#10b981' },
-              { value: 'on_site', label: 'On-site',   dot: '#6366f1' },
-              { value: 'hybrid',  label: 'Hybrid',    dot: '#8b5cf6' },
-            ].map(opt => (
-              <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                <input type="radio" name="workMode" value={opt.value} checked={workMode === opt.value}
-                  onChange={() => { setWorkMode(opt.value); apply(opt.value, education, minYears); }}
-                  style={{ accentColor: '#6366f1', cursor: 'pointer' }}/>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: opt.dot, flexShrink: 0 }}/>
-                <span style={{ fontSize: 13, color: '#374151', fontWeight: workMode === opt.value ? 600 : 400 }}>{opt.label}</span>
-              </label>
+    <div className="relative z-20 w-full overflow-visible pb-2">
+      <div className="flex flex-wrap items-center gap-2 overflow-visible">
+        <FilterDropdown
+          label={workModeLabel ?? 'Work mode'}
+          active={Boolean(workMode)}
+          badge={workMode ? 1 : 0}
+          onClear={() => {
+            setWorkMode('');
+            apply('', education, minYears);
+          }}
+          onApply={() => apply()}
+        >
+          <div className="space-y-2">
+            <OptionButton selected={!workMode} onClick={() => setWorkMode('')}>
+              Any work mode
+            </OptionButton>
+            {WORK_MODES.map((mode) => (
+              <OptionButton key={mode.value} selected={workMode === mode.value} onClick={() => setWorkMode(mode.value)}>
+                {mode.label}
+              </OptionButton>
             ))}
           </div>
-        </div>
+        </FilterDropdown>
 
-        <div style={{ height: 1, background: '#f1f5f9', margin: '0 0 20px' }}/>
-
-        {/* EDUCATION */}
-        <div style={{ marginBottom: 20 }}>
-          <h3 style={{ fontSize: 11, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>Education required</h3>
-          <select value={education}
-            onChange={e => { setEducation(e.target.value); apply(workMode, e.target.value, minYears); }}
-            style={{ width: '100%', fontSize: 13, border: '1.5px solid #e0e7ff', borderRadius: 8, padding: '7px 10px', color: '#374151', outline: 'none', background: '#f8f7ff', cursor: 'pointer' }}>
+        <FilterDropdown
+          label={educationLabel ?? 'Education level'}
+          active={Boolean(education)}
+          badge={education ? 1 : 0}
+          onClear={() => {
+            setEducation('');
+            apply(workMode, '', minYears);
+          }}
+          onApply={() => apply()}
+        >
+          <select
+            className="select select-bordered w-full rounded-lg"
+            value={education}
+            onChange={(e) => setEducation(e.target.value)}
+          >
             <option value="">Any level</option>
-            <option value="high_school">High school</option>
-            <option value="diploma">Diploma</option>
-            <option value="bachelor">Bachelor's</option>
-            <option value="master">Master's</option>
-            <option value="phd">PhD</option>
+            {EDUCATION_LEVELS.map((level) => (
+              <option key={level.value} value={level.value}>
+                {level.label}
+              </option>
+            ))}
           </select>
-        </div>
+        </FilterDropdown>
 
-        <div style={{ height: 1, background: '#f1f5f9', margin: '0 0 20px' }}/>
-
-        {/* EXPERIENCE */}
-        <div>
-          <h3 style={{ fontSize: 11, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>Experience required</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {[
-              { value: '',   label: 'Any level' },
-              { value: '0',  label: 'Entry level' },
-              { value: '2',  label: 'Junior (2 yrs)' },
-              { value: '5',  label: 'Mid (5 yrs)' },
-              { value: '10', label: 'Senior (10 yrs)' },
-            ].map(opt => (
-              <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                <input type="radio" name="minYears" value={opt.value} checked={minYears === opt.value}
-                  onChange={() => { setMinYears(opt.value); apply(workMode, education, opt.value); }}
-                  style={{ accentColor: '#6366f1', cursor: 'pointer' }}/>
-                <span style={{ fontSize: 13, color: '#374151', fontWeight: minYears === opt.value ? 600 : 400 }}>{opt.label}</span>
-              </label>
+        <FilterDropdown
+          label={minYears ? experienceLabel ?? 'Experience' : 'Experience'}
+          active={Boolean(minYears)}
+          badge={minYears ? 1 : 0}
+          onClear={() => {
+            setMinYears('');
+            apply(workMode, education, '');
+          }}
+          onApply={() => apply()}
+        >
+          <div className="space-y-2">
+            {EXPERIENCE_LEVELS.map((level) => (
+              <OptionButton key={level.value || 'any'} selected={minYears === level.value} onClick={() => setMinYears(level.value)}>
+                {level.label}
+              </OptionButton>
             ))}
           </div>
-        </div>
+        </FilterDropdown>
 
+        {activeCount > 0 && (
+          <button type="button" className="btn btn-ghost btn-sm px-4 text-primary hover:text-primary" onClick={reset}>
+            Clear all
+          </button>
+        )}
       </div>
-    </aside>
+    </div>
+  );
+}
+
+function FilterDropdown({
+  label,
+  active,
+  badge,
+  children,
+  onClear,
+  onApply,
+}: {
+  label: string;
+  active?: boolean;
+  badge?: number;
+  children: React.ReactNode;
+  onClear: () => void;
+  onApply: () => void;
+}) {
+  return (
+    <div className="dropdown dropdown-bottom">
+      <button
+        type="button"
+        tabIndex={0}
+        className={`btn btn-outline btn-sm border-base-300 bg-base-100 px-5 text-base-content hover:border-neutral hover:bg-base-200 hover:text-base-content focus:text-base-content ${
+          active ? 'border-neutral bg-base-200 font-bold' : 'font-normal'
+        }`}
+      >
+        {label}
+        {badge ? <span className="badge badge-neutral badge-sm ml-1 h-5 w-5 p-0 text-xs">{badge}</span> : null}
+      </button>
+      <div
+        tabIndex={0}
+        className="dropdown-content z-[250] mt-2 w-80 rounded-xl border border-base-300 bg-base-100 p-5 shadow-xl"
+      >
+        {children}
+        <div className="mt-5 flex justify-end gap-2 border-t border-base-300 pt-4">
+          <button type="button" className="btn btn-ghost btn-sm text-primary hover:text-primary" onClick={onClear}>
+            Clear
+          </button>
+          <button type="button" className="btn btn-primary btn-sm px-5" onClick={onApply}>
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OptionButton({
+  children,
+  selected,
+  onClick,
+}: {
+  children: React.ReactNode;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`squircle-button flex w-full items-center gap-3 px-2 py-2 text-left text-sm hover:bg-base-200 ${
+        selected ? 'font-bold text-primary' : 'text-base-content'
+      }`}
+      onClick={onClick}
+    >
+      <span className={`h-4 w-4 rounded-full border ${selected ? 'border-primary bg-primary shadow-[inset_0_0_0_4px_white]' : 'border-base-300'}`} />
+      {children}
+    </button>
   );
 }

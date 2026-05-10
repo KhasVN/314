@@ -6,7 +6,7 @@ import type {
 } from '@talent-matching/dtos';
 import { type FormEvent, useMemo, useState } from 'react';
 import useSWR from 'swr';
-import { talentApi } from '@features/talent/api';
+import { talentApi } from '../api';
 import {
   emptyToUndefined,
   enumOrUndefined,
