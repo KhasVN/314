@@ -9,6 +9,7 @@ export type RegisterFormValues = {
   workExperience: string;
   preferredLocations: string;
   preferredWorkMode: string;
+  resumeText: string;
 };
 
 export const EMPTY_REGISTER_FORM: RegisterFormValues = {
@@ -22,4 +23,5 @@ export const EMPTY_REGISTER_FORM: RegisterFormValues = {
   workExperience: '',
   preferredLocations: '',
   preferredWorkMode: '',
+  resumeText: '',
 };

@@ -69,6 +69,8 @@ export function useEmployerJobPosting() {
         requiredEducation: (form.educationLevel as never) || undefined,
         requiredSkills: skills.length > 0 ? skills.join(', ') : undefined,
         requiredYearsOfExperience: form.yearsOfExperience ? parseInt(form.yearsOfExperience, 10) : undefined,
+        salaryMin: form.salaryMin ? parseInt(form.salaryMin, 10) : undefined,
+        salaryMax: form.salaryMax ? parseInt(form.salaryMax, 10) : undefined,
         workMode: form.workMode as never,
         location: form.location.trim(),
       });

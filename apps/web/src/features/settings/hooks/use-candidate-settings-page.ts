@@ -7,6 +7,7 @@ import { settingsApi } from '@features/settings/api';
 export function useCandidateSettingsPage() {
   const { data: profile, mutate } = useSWR('candidate-profile', () => settingsApi.candidates.meOptional());
   const [showClose, setShowClose] = useState(false);
+  const [joiningMembership, setJoiningMembership] = useState(false);
 
   const handleSignOut = async () => {
     const { authClient } = await import('@lib/auth-client');
@@ -21,11 +22,24 @@ export function useCandidateSettingsPage() {
     window.location.href = '/candidate';
   };
 
+  const handleJoinMembership = async () => {
+    if (!profile?.id || profile.isMember) return;
+    setJoiningMembership(true);
+    try {
+      await settingsApi.candidates.joinMembership(profile.id);
+      await mutate();
+    } finally {
+      setJoiningMembership(false);
+    }
+  };
+
   return {
     profile,
     showClose,
     setShowClose,
+    joiningMembership,
     handleSignOut,
     handleCloseAccount,
+    handleJoinMembership,
   };
 }

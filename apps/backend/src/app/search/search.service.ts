@@ -34,6 +34,8 @@ export type JobSearchInput = {
   location?: string;
   requiredEducation?: EducationLevel;
   yearsOfExperience?: number;
+  salaryMin?: number;
+  salaryMax?: number;
   limit?: number;
   rerank?: boolean;
 };
@@ -110,6 +112,8 @@ export class SearchService {
             job.requiredEducation,
             job.requiredSkills,
             job.requiredYearsOfExperience,
+            job.salaryMin,
+            job.salaryMax,
             job.workMode,
             job.location,
           ]
@@ -419,6 +423,14 @@ export class SearchService {
       );
     }
 
+    if (input.salaryMin !== undefined) {
+      filters.push(sql`(${t('salary_max')} IS NULL OR ${t('salary_max')} >= ${input.salaryMin})`);
+    }
+
+    if (input.salaryMax !== undefined) {
+      filters.push(sql`(${t('salary_min')} IS NULL OR ${t('salary_min')} <= ${input.salaryMax})`);
+    }
+
     return filters;
   }
 
@@ -559,6 +571,8 @@ export class SearchService {
         requiredEducation: jobPostings.requiredEducation,
         requiredSkills: jobPostings.requiredSkills,
         requiredYearsOfExperience: jobPostings.requiredYearsOfExperience,
+        salaryMin: jobPostings.salaryMin,
+        salaryMax: jobPostings.salaryMax,
         workMode: jobPostings.workMode,
         location: jobPostings.location,
         status: jobPostings.status,
@@ -591,6 +605,8 @@ export class SearchService {
         requiredEducation: jobPostings.requiredEducation,
         requiredSkills: jobPostings.requiredSkills,
         requiredYearsOfExperience: jobPostings.requiredYearsOfExperience,
+        salaryMin: jobPostings.salaryMin,
+        salaryMax: jobPostings.salaryMax,
         workMode: jobPostings.workMode,
         location: jobPostings.location,
         status: jobPostings.status,

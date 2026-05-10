@@ -22,6 +22,7 @@ export function ProfilePage() {
             message={p.message}
             onSaveResume={p.saveResume}
             onBeginEditResume={p.beginEditResume}
+            onResumeFile={p.handleResumeFile}
           />
         )}
       </main>

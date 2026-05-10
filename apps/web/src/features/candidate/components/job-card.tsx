@@ -57,6 +57,11 @@ export function JobCard({ job, rank, isSelected, onClick, onApply }: Props) {
                 {job.requiredYearsOfExperience}+ yrs exp
               </span>
             )}
+            {(job.salaryMin != null || job.salaryMax != null) && (
+              <span className="rounded bg-[#fff8e6] px-2 py-1 text-xs font-semibold text-[#7c5a00]">
+                {formatSalary(job.salaryMin, job.salaryMax)}
+              </span>
+            )}
             {job.rerankScore !== undefined && (
               <span className="rounded bg-[#e4f7e6] px-2 py-1 text-xs font-semibold text-[#057642]">
                 {Math.round(job.rerankScore * 100)}% match
@@ -91,6 +96,14 @@ function WorkModeBadge({ mode }: { mode: string }) {
       {s.label}
     </span>
   );
+}
+
+function formatSalary(min?: number | null, max?: number | null) {
+  const money = (value: number) => `$${Math.round(value / 1000)}k`;
+  if (min != null && max != null) return `${money(min)} - ${money(max)}`;
+  if (min != null) return `${money(min)}+`;
+  if (max != null) return `Up to ${money(max)}`;
+  return 'Salary listed';
 }
 
 function formatEducation(level: string) {

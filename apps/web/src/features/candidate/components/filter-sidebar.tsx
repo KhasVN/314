@@ -31,19 +31,37 @@ const EXPERIENCE_LEVELS = [
   { value: '10', label: '10+ years' },
 ];
 
+const SALARY_RANGES = [
+  { value: '', label: 'Any salary' },
+  { value: '0-70000', label: 'Up to $70k' },
+  { value: '70000-100000', label: '$70k - $100k' },
+  { value: '100000-140000', label: '$100k - $140k' },
+  { value: '140000-', label: '$140k+' },
+];
+
 export function FilterSidebar({ onFilter }: Props) {
   const [workMode, setWorkMode] = useState('');
   const [education, setEducation] = useState('');
   const [minYears, setMinYears] = useState('');
+  const [salaryRange, setSalaryRange] = useState('');
 
-  const apply = (wm = workMode, edu = education, yrs = minYears) => {
+  const apply = (wm = workMode, edu = education, yrs = minYears, salary = salaryRange) => {
+    const [salaryMin, salaryMax] = salary.split('-');
     const params: JobSearchQueryDto = {
       workMode: (wm as JobSearchQueryDto['workMode']) || undefined,
       requiredEducation: (edu as JobSearchQueryDto['requiredEducation']) || undefined,
       yearsOfExperience: yrs ? Number(yrs) : undefined,
+      salaryMin: salaryMin ? Number(salaryMin) : undefined,
+      salaryMax: salaryMax ? Number(salaryMax) : undefined,
       limit: 100,
     };
-    const hasActiveFilter = Boolean(params.workMode || params.requiredEducation || params.yearsOfExperience !== undefined);
+    const hasActiveFilter = Boolean(
+      params.workMode ||
+        params.requiredEducation ||
+        params.yearsOfExperience !== undefined ||
+        params.salaryMin !== undefined ||
+        params.salaryMax !== undefined,
+    );
     onFilter(hasActiveFilter ? params : null);
   };
 
@@ -51,13 +69,15 @@ export function FilterSidebar({ onFilter }: Props) {
     setWorkMode('');
     setEducation('');
     setMinYears('');
+    setSalaryRange('');
     onFilter(null);
   };
 
-  const activeCount = [workMode, education, minYears].filter(Boolean).length;
+  const activeCount = [workMode, education, minYears, salaryRange].filter(Boolean).length;
   const workModeLabel = WORK_MODES.find((mode) => mode.value === workMode)?.label;
   const educationLabel = EDUCATION_LEVELS.find((level) => level.value === education)?.label;
   const experienceLabel = EXPERIENCE_LEVELS.find((level) => level.value === minYears)?.label;
+  const salaryLabel = SALARY_RANGES.find((range) => range.value === salaryRange)?.label;
 
   return (
     <div className="relative z-20 w-full overflow-visible pb-2">
@@ -122,6 +142,25 @@ export function FilterSidebar({ onFilter }: Props) {
             {EXPERIENCE_LEVELS.map((level) => (
               <OptionButton key={level.value || 'any'} selected={minYears === level.value} onClick={() => setMinYears(level.value)}>
                 {level.label}
+              </OptionButton>
+            ))}
+          </div>
+        </FilterDropdown>
+
+        <FilterDropdown
+          label={salaryRange ? salaryLabel ?? 'Salary' : 'Salary'}
+          active={Boolean(salaryRange)}
+          badge={salaryRange ? 1 : 0}
+          onClear={() => {
+            setSalaryRange('');
+            apply(workMode, education, minYears, '');
+          }}
+          onApply={() => apply()}
+        >
+          <div className="space-y-2">
+            {SALARY_RANGES.map((range) => (
+              <OptionButton key={range.value || 'any'} selected={salaryRange === range.value} onClick={() => setSalaryRange(range.value)}>
+                {range.label}
               </OptionButton>
             ))}
           </div>

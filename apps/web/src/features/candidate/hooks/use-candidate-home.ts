@@ -21,11 +21,11 @@ export function useCandidateHome() {
   );
 
   const { data: recommendedJobs = [], isLoading: loadingRecs } = useSWR(
-    activeTab === 'recommended' && profile?.id ? ['cand-recommendations', profile.id] : null,
+    activeTab === 'recommended' && profile?.id ? ['cand-recommendations', profile.id, profile.isMember] : null,
     () =>
       candidateApi.jobs.search({
         candidateId: profile!.id,
-        limit: 10,
+        limit: profile!.isMember ? 1000 : 10,
         rerank: true,
       }),
   );
@@ -54,6 +54,8 @@ export function useCandidateHome() {
         'workMode',
         'requiredEducation',
         'yearsOfExperience',
+        'salaryMin',
+        'salaryMax',
         'candidateId',
         'rerank',
       ] as const satisfies readonly (keyof JobSearchQueryDto)[]) {
@@ -67,6 +69,8 @@ export function useCandidateHome() {
           merged.workMode ||
           merged.requiredEducation ||
           merged.yearsOfExperience !== undefined ||
+          merged.salaryMin !== undefined ||
+          merged.salaryMax !== undefined ||
           merged.candidateId,
       );
       return hasTextOrFacet ? merged : null;

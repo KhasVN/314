@@ -87,6 +87,7 @@ export function useCandidateRegister() {
         skills: skills.length > 0 ? skills.join(', ') : undefined,
         preferredLocations: form.preferredLocations.trim() || undefined,
         preferredWorkMode: (form.preferredWorkMode as never) || undefined,
+        resumeText: form.resumeText.trim() || undefined,
         isMember: false,
       });
 

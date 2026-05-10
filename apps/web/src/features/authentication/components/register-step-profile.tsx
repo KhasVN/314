@@ -2,6 +2,7 @@
 
 import { getSuggestedSkills } from '@features/authentication/major-skills-map';
 import type { RegisterFormValues } from '@features/authentication/types';
+import { extractResumeText } from '@lib/resume-file';
 import { REGISTER_INPUT_CLASS, RegisterField, RegisterFormCard } from './register-form-primitives';
 
 type Props = {
@@ -10,6 +11,12 @@ type Props = {
 };
 
 export function RegisterStepProfile({ form, onChange }: Props) {
+  const handleResumeFile = async (file?: File) => {
+    if (!file) return;
+    const text = await extractResumeText(file);
+    onChange('resumeText', text.trim());
+  };
+
   return (
     <>
       <RegisterFormCard title="Education" icon="🎓">
@@ -68,6 +75,23 @@ export function RegisterStepProfile({ form, onChange }: Props) {
             placeholder="e.g. 3 years as a software developer at XYZ..."
             value={form.workExperience}
             onChange={(e) => onChange('workExperience', e.target.value)}
+          />
+        </RegisterField>
+        <RegisterField label="Resume file" hint="PDF or text-based files (.pdf, .txt, .md, .csv)">
+          <input
+            className={REGISTER_INPUT_CLASS}
+            type="file"
+            accept=".pdf,.txt,.md,.csv,.json,application/pdf,text/*"
+            onChange={(e) => handleResumeFile(e.target.files?.[0])}
+          />
+        </RegisterField>
+        <RegisterField label="Resume text">
+          <textarea
+            className={`${REGISTER_INPUT_CLASS} min-h-[120px] resize-y`}
+            rows={4}
+            placeholder="Upload a text resume or paste resume content here..."
+            value={form.resumeText}
+            onChange={(e) => onChange('resumeText', e.target.value)}
           />
         </RegisterField>
       </RegisterFormCard>

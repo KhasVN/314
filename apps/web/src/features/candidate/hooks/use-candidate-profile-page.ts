@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import { candidateApi } from '@features/candidate/api';
+import { extractResumeText } from '@lib/resume-file';
 
 export function useCandidateProfilePage() {
   const { data: candidate, mutate } = useSWR('candidate-profile', () => candidateApi.candidates.meOptional());
@@ -26,6 +27,12 @@ export function useCandidateProfilePage() {
 
   const beginEditResume = (existing?: string | null) => setResumeText(existing ?? '');
 
+  const handleResumeFile = async (file?: File) => {
+    if (!file) return;
+    const text = await extractResumeText(file);
+    setResumeText(text.trim());
+  };
+
   return {
     candidate,
     resumeText,
@@ -34,5 +41,6 @@ export function useCandidateProfilePage() {
     message,
     saveResume,
     beginEditResume,
+    handleResumeFile,
   };
 }

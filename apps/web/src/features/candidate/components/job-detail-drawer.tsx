@@ -58,6 +58,9 @@ export function JobDetailDrawer({ job, onApply, onClose }: Props) {
             {job.requiredYearsOfExperience != null && (
               <InfoBadge icon="📅" label={`${job.requiredYearsOfExperience}+ years`} color="green" />
             )}
+            {(job.salaryMin != null || job.salaryMax != null) && (
+              <InfoBadge icon="$" label={formatSalary(job.salaryMin, job.salaryMax)} color="gold" />
+            )}
           </div>
 
           {job.requiredSkills && (
@@ -115,6 +118,14 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h3 className="mb-3 text-base font-bold text-[#2d2d2d]">{children}</h3>;
 }
 
+function formatSalary(min?: number | null, max?: number | null) {
+  const money = (value: number) => `$${Math.round(value / 1000)}k`;
+  if (min != null && max != null) return `${money(min)} - ${money(max)}`;
+  if (min != null) return `${money(min)}+`;
+  if (max != null) return `Up to ${money(max)}`;
+  return 'Salary listed';
+}
+
 function InfoBadge({
   icon,
   label,
@@ -122,12 +133,13 @@ function InfoBadge({
 }: {
   icon: string;
   label: string;
-  color: 'blue' | 'purple' | 'green';
+  color: 'blue' | 'purple' | 'green' | 'gold';
 }) {
   const map = {
     blue: { bg: '#eef4ff', text: '#2557a7' },
     purple: { bg: '#f3f2f1', text: '#595959' },
     green: { bg: '#e4f7e6', text: '#057642' },
+    gold: { bg: '#fff8e6', text: '#7c5a00' },
   };
   const { bg, text } = map[color];
   return (

@@ -86,6 +86,32 @@ export function EmployerHome() {
           <p className="mb-6 text-sm text-[#595959]">
             Managing <span className="font-semibold text-[#2d2d2d]">{h.myEmployer.companyName}</span>
           </p>
+          <div className="mb-5 rounded-2xl border border-[#d4d2d0] bg-[#f8fafc] p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-bold text-[#2d2d2d]">Membership</p>
+                <p className="mt-1 text-xs text-[#595959]">
+                  {h.myEmployer.isMember
+                    ? 'Unlimited candidate recommendations are enabled.'
+                    : 'Free accounts show up to 10 recommended candidates.'}
+                </p>
+              </div>
+              {h.myEmployer.isMember ? (
+                <span className="self-start rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-bold text-[#2557a7] sm:self-auto">
+                  Member
+                </span>
+              ) : (
+                <LinkedoutButton
+                  type="button"
+                  className="min-h-10 px-4 text-sm"
+                  disabled={h.joiningMembership}
+                  onClick={h.handleJoinMembership}
+                >
+                  {h.joiningMembership ? 'Joining...' : 'Join membership'}
+                </LinkedoutButton>
+              )}
+            </div>
+          </div>
 
           <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end">
             <div className="min-w-0 flex-1 lg:max-w-xl">

@@ -172,6 +172,26 @@ export function CreateJobPage() {
                     <option value="10">10+ years</option>
                   </LinkedoutSelect>
                 </JobPostingField>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <JobPostingField label="Minimum salary">
+                    <LinkedoutInput
+                      type="number"
+                      min="0"
+                      placeholder="e.g. 70000"
+                      value={j.form.salaryMin}
+                      onChange={(e) => j.setField('salaryMin', e.target.value)}
+                    />
+                  </JobPostingField>
+                  <JobPostingField label="Maximum salary">
+                    <LinkedoutInput
+                      type="number"
+                      min="0"
+                      placeholder="e.g. 95000"
+                      value={j.form.salaryMax}
+                      onChange={(e) => j.setField('salaryMax', e.target.value)}
+                    />
+                  </JobPostingField>
+                </div>
               </JobPostingFormCard>
 
               <JobPostingFormCard title="Work arrangement" icon="📍">

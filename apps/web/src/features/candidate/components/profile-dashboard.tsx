@@ -12,6 +12,7 @@ type Props = {
   message: string;
   onSaveResume: () => void;
   onBeginEditResume: (existing?: string | null) => void;
+  onResumeFile: (file?: File) => void;
 };
 
 export function ProfileDashboard({
@@ -22,6 +23,7 @@ export function ProfileDashboard({
   message,
   onSaveResume,
   onBeginEditResume,
+  onResumeFile,
 }: Props) {
   const detailRows = [
     { label: 'Education', value: formatEducationLevel(candidate.education), icon: '🎓' },
@@ -100,6 +102,12 @@ export function ProfileDashboard({
           </p>
         )}
         <div className="mt-4 space-y-3">
+          <input
+            type="file"
+            accept=".pdf,.txt,.md,.csv,.json,application/pdf,text/*"
+            className="file-input file-input-bordered w-full"
+            onChange={(e) => onResumeFile(e.target.files?.[0])}
+          />
           <LinkedoutTextarea
             value={resumeText}
             onChange={(e) => onResumeChange(e.target.value)}

@@ -26,6 +26,28 @@ export function SettingsPage() {
             </SettingSection>
 
             <SettingSection>
+              <SettingRow
+                label="Membership"
+                value={s.profile.isMember ? 'Active member' : 'Free account'}
+              >
+                {s.profile.isMember ? (
+                  <span className="inline-flex rounded-full bg-[#eef4ff] px-3 py-1 text-[13px] font-bold text-[#2557a7]">
+                    Unlimited recommendations enabled
+                  </span>
+                ) : (
+                  <LinkedoutButton
+                    type="button"
+                    className="text-[13px]"
+                    disabled={s.joiningMembership}
+                    onClick={s.handleJoinMembership}
+                  >
+                    {s.joiningMembership ? 'Joining...' : 'Join membership'}
+                  </LinkedoutButton>
+                )}
+              </SettingRow>
+            </SettingSection>
+
+            <SettingSection>
               <SettingRow label="Email" value={s.profile.contactInfo ?? ''} />
             </SettingSection>
 

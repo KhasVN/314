@@ -11,7 +11,11 @@ export type EmployerWorkModeFilter = 'remote' | 'on_site' | 'hybrid' | '';
 
 export function useEmployerHome() {
   const { data: session } = authClient.useSession();
-  const { data: myEmployer, isLoading: employerLoading } = useSWR(session?.user ? 'employer-profile' : null, () =>
+  const {
+    data: myEmployer,
+    isLoading: employerLoading,
+    mutate: mutateEmployer,
+  } = useSWR(session?.user ? 'employer-profile' : null, () =>
     employerApi.employers.meOptional(),
   );
 
@@ -30,6 +34,7 @@ export function useEmployerHome() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingJobId, setDeletingJobId] = useState('');
   const [deleteError, setDeleteError] = useState('');
+  const [joiningMembership, setJoiningMembership] = useState(false);
 
   const { data: allCandidates = [], isLoading: loadingAll } = useSWR(
     dashboardReady ? 'employer-all-candidates' : null,
@@ -42,11 +47,11 @@ export function useEmployerHome() {
   );
 
   const { data: recommendedCandidates = [], isLoading: loadingRecs } = useSWR(
-    dashboardReady && employerId ? ['emp-recommendations', employerId] : null,
+    dashboardReady && employerId ? ['emp-recommendations', employerId, myEmployer?.isMember] : null,
     () =>
       employerApi.candidates.search({
         employerId,
-        limit: 10,
+        limit: myEmployer?.isMember ? 1000 : 10,
         rerank: true,
       }),
   );
@@ -102,6 +107,17 @@ export function useEmployerHome() {
     setDeletingJobId('');
   };
 
+  const handleJoinMembership = async () => {
+    if (!myEmployer?.id || myEmployer.isMember) return;
+    setJoiningMembership(true);
+    try {
+      await employerApi.employers.update(myEmployer.id, { isMember: true });
+      await mutateEmployer();
+    } finally {
+      setJoiningMembership(false);
+    }
+  };
+
   return {
     session,
     employerLoading,
@@ -127,6 +143,7 @@ export function useEmployerHome() {
     setDeletingJobId,
     deleteError,
     setDeleteError,
+    joiningMembership,
     allCandidates,
     recommendedCandidates,
     myJobs,
@@ -135,6 +152,7 @@ export function useEmployerHome() {
     handleSearch,
     handleClear,
     handleDeleteJob,
+    handleJoinMembership,
     sectionLabel,
     closeDeleteModal,
   };
