@@ -50,6 +50,20 @@ export class CandidatesService {
     return this.database.db.select().from(candidateProfiles);
   }
 
+  async findByUserId(userId: string) {
+    const [candidate] = await this.database.db
+      .select()
+      .from(candidateProfiles)
+      .where(eq(candidateProfiles.userId, userId))
+      .limit(1);
+
+    if (!candidate) {
+      throw new NotFoundException('Candidate profile not found');
+    }
+
+    return candidate;
+  }
+
   async findOne(id: string) {
     const [candidate] = await this.database.db
       .select()
@@ -109,6 +123,7 @@ export class CandidatesService {
     return this.searchService.searchCandidates({
       query: query.query,
       jobId: query.jobId,
+      employerId: query.employerId,
       education: query.education,
       location: query.location,
       workMode: query.workMode,

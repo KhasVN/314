@@ -9,6 +9,14 @@ export async function getJson<T>(url: string, params?: Record<string, unknown>):
   return response.data;
 }
 
+export async function getJsonAllowMissing<T>(path: string): Promise<T | null> {
+  try {
+    return await getJson<T>(path);
+  } catch {
+    return null;
+  }
+}
+
 export async function postJson<T>(url: string, data: unknown): Promise<T> {
   const response = await api.post<T>(url, data);
   return response.data;

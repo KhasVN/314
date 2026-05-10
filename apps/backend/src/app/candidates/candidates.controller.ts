@@ -8,13 +8,17 @@ import {
   Delete,
   Query,
   ParseUUIDPipe,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import {
   candidateSearchQuerySchema,
   createCandidateSchema,
   type CandidateSearchQueryDto,
 } from '@talent-matching/dtos';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
+import { getSessionUserFromHeaders } from '../auth/session-user';
 import { CandidatesService } from './candidates.service';
 import { CreateCandidateDto } from './dto/create-candidate.dto';
 import { UpdateCandidateDto } from './dto/update-candidate.dto';
@@ -35,6 +39,15 @@ export class CandidatesController {
   @Get()
   findAll() {
     return this.candidatesService.findAll();
+  }
+
+  @Get('me')
+  async getMine(@Req() req: Request) {
+    const user = await getSessionUserFromHeaders(req.headers);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    return this.candidatesService.findByUserId(user.id);
   }
 
   @Get('search')

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { inArray, sql, type SQL } from 'drizzle-orm';
+import { and, eq, inArray, sql, type SQL } from 'drizzle-orm';
 import {
   candidateProfiles,
   employerProfiles,
@@ -41,6 +41,7 @@ export type JobSearchInput = {
 export type CandidateSearchInput = {
   query?: string;
   jobId?: string;
+  employerId?: string;
   education?: EducationLevel;
   location?: string;
   workMode?: WorkMode;
@@ -86,7 +87,16 @@ export class SearchService {
       ),
     ]);
 
-    const fused = this.fuse(lists).slice(0, Math.max(limit * 2, limit));
+    let fused = this.fuse(lists).slice(0, Math.max(limit * 2, limit));
+
+    if (fused.length === 0) {
+      fused = await this.browseJobsRanked(
+        input,
+        education,
+        yearsOfExperience,
+        Math.max(limit * 2, limit),
+      );
+    }
     const rows = await this.findJobsByIds(fused.map((item) => item.id));
     const scored = this.attachScores(rows, fused, (row) => row.id);
 
@@ -109,7 +119,14 @@ export class SearchService {
   }
 
   async searchCandidates(input: CandidateSearchInput) {
-    const job = input.jobId ? await this.findJob(input.jobId) : undefined;
+    let resolvedJobId = input.jobId;
+    if (!resolvedJobId && input.employerId) {
+      resolvedJobId =
+        (await this.findLatestPublishedJobIdForEmployer(input.employerId)) ??
+        undefined;
+    }
+
+    const job = resolvedJobId ? await this.findJob(resolvedJobId) : undefined;
     const query = (
       input.query ??
       job?.searchText ??
@@ -140,7 +157,17 @@ export class SearchService {
       ),
     ]);
 
-    const fused = this.fuse(lists).slice(0, Math.max(limit * 2, limit));
+    let fused = this.fuse(lists).slice(0, Math.max(limit * 2, limit));
+
+    if (fused.length === 0) {
+      fused = await this.browseCandidatesRanked(
+        input,
+        education,
+        minYearsOfExperience,
+        Math.max(limit * 2, limit),
+      );
+    }
+
     const rows = await this.findCandidatesByIds(fused.map((item) => item.id));
     const scored = this.attachScores(rows, fused, (row) => row.id);
 
@@ -161,6 +188,80 @@ export class SearchService {
             .filter(Boolean)
             .join(' '),
         );
+  }
+
+  private async browseJobsRanked(
+    input: JobSearchInput,
+    education: EducationLevel | undefined,
+    yearsOfExperience: number | undefined,
+    limit: number,
+  ): Promise<{ id: string; score: number }[]> {
+    try {
+      const result = await this.database.db.execute<SearchRow>(sql`
+        SELECT jp.id::text AS id
+        FROM job_postings jp
+        ${this.where([
+          ...this.jobFilters(input, education, yearsOfExperience, 'jp'),
+        ])}
+        ORDER BY jp.title ASC
+        LIMIT ${limit}
+      `);
+      const ranked = this.rank(this.rows(result));
+      return ranked.map((r, i) => ({
+        id: r.id,
+        score: 1 / (60 + i + 1),
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  private async browseCandidatesRanked(
+    input: CandidateSearchInput,
+    education: EducationLevel | undefined,
+    minYearsOfExperience: number | undefined,
+    limit: number,
+  ): Promise<{ id: string; score: number }[]> {
+    try {
+      const result = await this.database.db.execute<SearchRow>(sql`
+        SELECT cp.id::text AS id
+        FROM candidate_profiles cp
+        ${this.where([
+          ...this.candidateFilters(
+            input,
+            education,
+            minYearsOfExperience,
+            'cp',
+          ),
+        ])}
+        ORDER BY cp.full_name ASC
+        LIMIT ${limit}
+      `);
+      const ranked = this.rank(this.rows(result));
+      return ranked.map((r, i) => ({
+        id: r.id,
+        score: 1 / (60 + i + 1),
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  private async findLatestPublishedJobIdForEmployer(
+    employerId: string,
+  ): Promise<string | null> {
+    const [row] = await this.database.db
+      .select({ id: jobPostings.id })
+      .from(jobPostings)
+      .where(
+        and(
+          eq(jobPostings.employerId, employerId),
+          eq(jobPostings.status, 'published'),
+        ),
+      )
+      .orderBy(jobPostings.title)
+      .limit(1);
+    return row?.id ?? null;
   }
 
   private async rankJobsByFuzzy(
