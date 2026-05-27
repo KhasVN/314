@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation';
+import { TalentDashboard } from '../features/talent/talent-dashboard';
 
 export default function Page() {
-  redirect('/candidate');
+  return <TalentDashboard />;
 }

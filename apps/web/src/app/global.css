@@ -22,34 +22,6 @@
 }
 
 @layer components {
-  .squircle {
-    border-radius: 2rem;
-    overflow: clip;
-    isolation: isolate;
-    background-clip: padding-box;
-  }
-
-  .squircle-card {
-    @apply squircle border bg-white;
-    border-color: #d4d2d0;
-  }
-
-  .squircle-button,
-  .btn {
-    border-radius: 1.25rem;
-    overflow: clip;
-    isolation: isolate;
-    background-clip: padding-box;
-  }
-
-  @supports (corner-shape: squircle) {
-    .squircle,
-    .squircle-button,
-    .btn {
-      corner-shape: squircle;
-    }
-  }
-
   .hero-block h1 {
     @apply text-primary mt-6 uppercase font-semibold leading-tight;
     font-size: clamp(3.2rem, 6.6vw, 6rem);
@@ -89,7 +61,8 @@
     border-top: 1px solid rgba(4, 4, 21, 0.08);
   }
 
-  .search-workspace {
+  /* Filter Rail */
+  .filter-rail {
     @apply flex flex-col gap-8;
   }
 
@@ -117,6 +90,7 @@
     @apply grid gap-3;
   }
 
+  /* Results Area - List + Detail Split */
   .results-area {
     @apply min-h-[30rem];
   }
@@ -191,6 +165,7 @@
     }
   }
 
+  /* Auth */
   .auth-mode {
     @apply grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -217,6 +192,7 @@
 }
 
 @layer utilities {
+  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
@@ -225,6 +201,7 @@
   }
 }
 
+/* Responsive */
 @media (max-width: 1020px) {
   .search-workspace, .crud-grid {
     grid-template-columns: 1fr;

@@ -1,7 +1,7 @@
 import type { ApplicationDto, CandidateDto, JobDto } from '@talent-matching/dtos';
 import { useState } from 'react';
 import useSWR from 'swr';
-import { talentApi } from '../../api';
+import { talentApi } from '@features/talent/api';
 import { CrudSurface, FormActions, RowActions, SelectInput, SimpleTable, TextArea } from '@components/form-controls';
 
 const applicationStatusOptions = ['submitted', 'reviewed', 'shortlisted', 'rejected', 'accepted'];

@@ -85,8 +85,6 @@ export const createJobSchema = z.object({
     .nonnegative()
     .optional()
     .nullable(),
-  salaryMin: z.number().int().nonnegative().optional().nullable(),
-  salaryMax: z.number().int().nonnegative().optional().nullable(),
   workMode: workModeSchema.optional().nullable(),
   location: z.string().optional().nullable(),
   status: jobStatusSchema.optional(),
@@ -139,16 +137,13 @@ export const jobSearchQuerySchema = z.object({
   location: z.string().optional(),
   requiredEducation: educationLevelSchema.optional(),
   yearsOfExperience: optionalNonNegativeIntQuerySchema,
-  salaryMin: optionalNonNegativeIntQuerySchema,
-  salaryMax: optionalNonNegativeIntQuerySchema,
   limit: optionalPositiveIntQuerySchema,
   rerank: optionalBooleanQuerySchema,
 });
 
 export const candidateSearchQuerySchema = z.object({
   query: z.string().optional(),
-  jobId: z.string().uuid().optional(),
-  employerId: z.string().uuid().optional(),
+  jobId: z.string().optional(),
   education: educationLevelSchema.optional(),
   location: z.string().optional(),
   workMode: workModeSchema.optional(),

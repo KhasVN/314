@@ -30,20 +30,6 @@ export class EmployersService {
     return this.database.db.select().from(employerProfiles);
   }
 
-  async findByUserId(userId: string) {
-    const [employer] = await this.database.db
-      .select()
-      .from(employerProfiles)
-      .where(eq(employerProfiles.userId, userId))
-      .limit(1);
-
-    if (!employer) {
-      throw new NotFoundException('Employer profile not found');
-    }
-
-    return employer;
-  }
-
   // ── SEARCH employers by company name OR job title ─────────
   // Searches employer_profiles.company_name and job_postings.title
   // using case-insensitive ILIKE matching (fuzzy search).

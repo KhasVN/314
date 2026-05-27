@@ -1,28 +1,25 @@
 'use client';
 
+// hero-search.tsx — matches home page theme
+// Light purple gradient banner, indigo/purple accents
+
 import { useState, type FormEvent } from 'react';
 import type { JobSearchQueryDto } from '@talent-matching/dtos';
-import { FilterSidebar } from './filter-sidebar';
 
 type Props = {
   onSearch: (params: JobSearchQueryDto) => void;
   onClear: () => void;
-  onFilter: (params: JobSearchQueryDto | null) => void;
 };
 
-const POPULAR_TAGS = ['Software Engineer', 'Data Analyst', 'Remote', 'Marketing'];
+const POPULAR_TAGS = ['Software Engineer', 'Data Analyst', 'Product Manager', 'Remote', 'Marketing', 'UX Designer'];
 
-export function HeroSearch({ onSearch, onClear, onFilter }: Props) {
-  const [keyword, setKeyword] = useState('');
+export function HeroSearch({ onSearch, onClear }: Props) {
+  const [keyword, setKeyword]   = useState('');
   const [location, setLocation] = useState('');
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onSearch({
-      query: keyword.trim() || undefined,
-      location: location.trim() || undefined,
-      limit: 100,
-    });
+    onSearch({ query: keyword.trim() || undefined, location: location.trim() || undefined, limit: 100 });
   };
 
   const handleTag = (tag: string) => {
@@ -37,70 +34,70 @@ export function HeroSearch({ onSearch, onClear, onFilter }: Props) {
   };
 
   return (
-    <section className="relative z-10 overflow-visible border-b border-[#e4e2e0] bg-white px-4 py-5 lg:px-6">
-      <div className="mx-auto max-w-7xl overflow-visible">
-        <div className="squircle mx-auto flex max-w-[840px] flex-col border border-[#2d2d2d] bg-white shadow-[0_2px_8px_rgba(45,45,45,0.18)] focus-within:ring-2 focus-within:ring-[#2557a7] min-[760px]:h-14 min-[760px]:flex-row min-[760px]:items-center">
-          <form onSubmit={handleSubmit} className="contents">
-          <label className="flex min-w-0 flex-1 items-center gap-3 px-5 py-3 min-[760px]:py-0">
-            <svg className="h-5 w-5 shrink-0 text-[#2d2d2d]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.4}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.2-5.2m1.2-5.3a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z" />
-            </svg>
-            <span className="sr-only">What</span>
-            <input
-              type="text"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Job title, keywords, or company"
-              className="w-full rounded-md border-0 bg-transparent text-base text-[#2d2d2d] placeholder:text-[#767676] focus:outline-none focus:ring-2 focus:ring-[#2557a7]/20"
-            />
-          </label>
-          <label className="flex min-w-0 items-center gap-3 border-t border-[#d4d2d0] px-5 py-3 min-[760px]:w-64 min-[760px]:border-l min-[760px]:border-t-0 min-[760px]:py-0">
-            <svg className="h-5 w-5 shrink-0 text-[#2d2d2d]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.3}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 21s6-5.1 6-11a6 6 0 1 0-12 0c0 5.9 6 11 6 11Z" />
-              <circle cx="12" cy="10" r="2.2" />
-            </svg>
-            <span className="sr-only">Where</span>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="City or remote"
-              className="w-full rounded-md border-0 bg-transparent text-base text-[#2d2d2d] placeholder:text-[#767676] focus:outline-none focus:ring-2 focus:ring-[#2557a7]/20"
-            />
-          </label>
-          <div className="flex gap-2 p-2 min-[760px]:pl-0">
-            <button
-              type="submit"
-              className="squircle-button min-h-11 bg-[#2557a7] px-6 text-sm font-bold text-white hover:bg-[#164081] md:min-w-[98px]"
-            >
+    <section style={{ background: 'linear-gradient(160deg, #f8f7ff 0%, #f0f4ff 60%, #faf5ff 100%)', padding: '48px 24px 40px', position: 'relative', overflow: 'hidden' }}>
+
+      {/* Decorative blobs */}
+      <div style={{ position: 'absolute', top: -60, right: '5%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+      <div style={{ position: 'absolute', bottom: -40, left: '5%', width: 250, height: 250, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+
+      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+
+        {/* Badge */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#ede9fe', color: '#7c3aed', fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 9999, marginBottom: 16, letterSpacing: '0.04em' }}>
+          <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#7c3aed', display: 'inline-block' }}/>
+          INTELLIGENT TALENT MATCHING
+        </div>
+
+        <h1 style={{ fontWeight: 900, color: '#0f172a', margin: '0 0 6px', fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', letterSpacing: '-0.5px' }}>
+          Find your next role
+        </h1>
+        <p style={{ fontSize: 15, color: '#64748b', margin: '0 0 24px' }}>
+          Search thousands of jobs matched to your skills and experience
+        </p>
+
+        {/* Search bar */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+
+            {/* Keyword */}
+            <div style={{ flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', background: '#fff', borderRadius: 12, padding: '0 16px', gap: 10, border: '1.5px solid #e0e7ff', boxShadow: '0 1px 4px rgba(99,102,241,0.06)' }}>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <input type="text" value={keyword} onChange={e => setKeyword(e.target.value)}
+                placeholder="Job title, keywords, or company"
+                style={{ flex: 1, padding: '12px 0', background: 'transparent', border: 'none', outline: 'none', fontSize: 14, color: '#111827' }}/>
+              {keyword && <button type="button" onClick={handleClear} style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 16, padding: 0 }}>✕</button>}
+            </div>
+
+            {/* Location */}
+            <div style={{ width: 220, display: 'flex', alignItems: 'center', background: '#fff', borderRadius: 12, padding: '0 16px', gap: 10, border: '1.5px solid #e0e7ff', boxShadow: '0 1px 4px rgba(99,102,241,0.06)' }}>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              </svg>
+              <input type="text" value={location} onChange={e => setLocation(e.target.value)}
+                placeholder="City or remote"
+                style={{ flex: 1, padding: '12px 0', background: 'transparent', border: 'none', outline: 'none', fontSize: 14, color: '#111827' }}/>
+            </div>
+
+            {/* Submit */}
+            <button type="submit" style={{ padding: '12px 28px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
               Find jobs
             </button>
-            {(keyword || location) && (
-              <button type="button" className="squircle-button px-4 text-sm font-semibold text-[#2557a7] hover:bg-[#eef4ff]" onClick={handleClear}>
-                Reset
-              </button>
-            )}
           </div>
-          </form>
-        </div>
 
-        <div className="mx-auto mt-4 flex max-w-[840px] flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-          <span className="text-[#595959]">Popular jobs:</span>
-          {POPULAR_TAGS.map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              className="squircle-button px-2 py-1 text-[#2557a7] underline underline-offset-2 hover:bg-[#eef4ff] hover:text-[#164081]"
-              onClick={() => handleTag(tag)}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
+          {/* Popular tags */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 12, color: '#9ca3af', fontWeight: 500 }}>Popular:</span>
+            {POPULAR_TAGS.map(tag => (
+              <button key={tag} type="button" onClick={() => handleTag(tag)}
+                style={{ fontSize: 12, padding: '4px 12px', borderRadius: 9999, background: '#fff', border: '1px solid #e0e7ff', color: '#6366f1', fontWeight: 500, cursor: 'pointer' }}>
+                {tag}
+              </button>
+            ))}
+          </div>
+        </form>
 
-        <div className="relative z-20 mx-auto mt-5 max-w-[840px] overflow-visible">
-          <FilterSidebar onFilter={onFilter} />
-        </div>
       </div>
     </section>
   );

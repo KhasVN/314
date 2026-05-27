@@ -5,7 +5,7 @@ import type {
 } from '@talent-matching/dtos';
 import { useState } from 'react';
 import useSWR from 'swr';
-import { talentApi } from '../../api';
+import { talentApi } from '@features/talent/api';
 import { enumValue, numberOrNull } from '@features/talent/utils';
 import {
   CheckboxInput,

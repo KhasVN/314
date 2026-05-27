@@ -8,13 +8,9 @@ import {
   Delete,
   Query,
   ParseUUIDPipe,
-  Req,
-  UnauthorizedException,
 } from '@nestjs/common';
-import type { Request } from 'express';
 import { createEmployerSchema } from '@talent-matching/dtos';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
-import { getSessionUserFromHeaders } from '../auth/session-user';
 import { EmployersService } from './employers.service';
 import { CreateEmployerDto } from './dto/create-employer.dto';
 import { UpdateEmployerDto } from './dto/update-employer.dto';
@@ -38,15 +34,6 @@ export class EmployersController {
   findAll(@Query('search') search?: string) {
     if (search) return this.employersService.search(search);
     return this.employersService.findAll();
-  }
-
-  @Get('me')
-  async getMine(@Req() req: Request) {
-    const user = await getSessionUserFromHeaders(req.headers);
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-    return this.employersService.findByUserId(user.id);
   }
 
   @Get(':id')
