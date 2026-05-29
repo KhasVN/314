@@ -95,6 +95,8 @@ export const jobPostings = pgTable(
     requiredEducation: educationLevel('required_education'),
     requiredSkills: text('required_skills'),
     requiredYearsOfExperience: integer('required_years_of_experience'),
+    salaryMin: integer('salary_min'),
+    salaryMax: integer('salary_max'),
     workMode: workMode('work_mode'),
     location: text('location'),
     status: jobStatus('status').default('published').notNull(),

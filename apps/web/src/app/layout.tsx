@@ -1,13 +1,13 @@
 import './global.css';
 
 export const metadata = {
-  title: 'Talent Matching',
-  description: 'Intelligent talent matching platform',
+  title: 'Linkedout',
+  description: 'Intelligent Linkedout platform',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-theme="talent" suppressHydrationWarning>
+    <html lang="en" data-theme="indeed" suppressHydrationWarning>
       <body suppressHydrationWarning>{children}</body>
     </html>
   );
