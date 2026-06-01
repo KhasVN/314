@@ -9,6 +9,10 @@ import {
 import { EmployerCandidateCard } from '../components/employer-candidate-card';
 import { EmployerCandidateDrawer } from '../components/employer-candidate-drawer';
 import { EmployerDeleteJobDialog } from '../components/employer-delete-job-dialog';
+import { EmployerEditJobDialog } from '../components/employer-edit-job-dialog';
+import { EmployerEditProfileDialog } from '../components/employer-edit-profile-dialog';
+import { EmployerChangePasswordDialog } from '../components/employer-change-password-dialog';
+import { EmployerJobStatsCard } from '../components/employer-job-stats-card';
 import { useEmployerHome } from '../hooks/use-employer-home';
 import { useScrollReveal } from '@/lib/use-scroll-reveal';
 

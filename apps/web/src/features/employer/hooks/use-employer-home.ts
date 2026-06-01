@@ -4,7 +4,7 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import { authClient } from '@lib/auth-client';
 import { employerApi } from '@features/employer/api';
-import type { CandidateDto, CandidateSearchQueryDto } from '@talent-matching/dtos';
+import type { CandidateDto, CandidateSearchQueryDto, JobDto } from '@talent-matching/dtos';
 
 export type EmployerEducationFilter = 'high_school' | 'diploma' | 'bachelor' | 'master' | 'phd' | '';
 export type EmployerWorkModeFilter = 'remote' | 'on_site' | 'hybrid' | '';
@@ -35,6 +35,15 @@ export function useEmployerHome() {
   const [deletingJobId, setDeletingJobId] = useState('');
   const [deleteError, setDeleteError] = useState('');
   const [joiningMembership, setJoiningMembership] = useState(false);
+
+  // Edit job dialog
+  const [editingJob, setEditingJob] = useState<JobDto | null>(null);
+
+  // Edit profile dialog
+  const [showEditProfile, setShowEditProfile] = useState(false);
+
+  // Change password dialog
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   const { data: allCandidates = [], isLoading: loadingAll } = useSWR(
     dashboardReady ? 'employer-all-candidates' : null,
@@ -155,5 +164,15 @@ export function useEmployerHome() {
     handleJoinMembership,
     sectionLabel,
     closeDeleteModal,
+    // Edit job
+    editingJob,
+    setEditingJob,
+    mutateJobs,
+    // Edit profile
+    showEditProfile,
+    setShowEditProfile,
+    // Change password
+    showChangePassword,
+    setShowChangePassword,
   };
 }

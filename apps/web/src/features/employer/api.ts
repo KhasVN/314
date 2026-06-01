@@ -22,6 +22,10 @@ export const employerApi = {
   },
   jobs: {
     create: (data: CreateJobDto) => postJson<JobDto>('/jobs', data),
+    // Update an existing job posting — uses `any` to avoid type conflicts
+    // until the backend exposes a dedicated UpdateJobDto type.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    update: (id: string, data: Record<string, any>) => patchJson<JobDto>(`/jobs/${id}`, data),
     remove: (id: string) => deleteJson<JobDto>(`/jobs/${id}`),
   },
 };
