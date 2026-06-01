@@ -8,6 +8,8 @@ export type LoginConfig = {
   registerHref: string;
   registerLead: string;
   registerCta: string;
+  forgotPasswordHref: string;
+  resetPasswordRedirectTo: string;
 };
 
 export const CANDIDATE_LOGIN: LoginConfig = {
@@ -20,6 +22,8 @@ export const CANDIDATE_LOGIN: LoginConfig = {
   registerHref: '/candidate/register',
   registerLead: 'New to Linkedout?',
   registerCta: 'Create an account',
+  forgotPasswordHref: '/candidate/forgot-password',
+  resetPasswordRedirectTo: 'http://localhost:3000/candidate/reset-password',
 };
 
 export const EMPLOYER_LOGIN: LoginConfig = {
@@ -32,4 +36,6 @@ export const EMPLOYER_LOGIN: LoginConfig = {
   registerHref: '/employer/register',
   registerLead: 'Hiring on Linkedout?',
   registerCta: 'Create an employer account',
+  forgotPasswordHref: '/employer/forgot-password',
+  resetPasswordRedirectTo: 'http://localhost:3000/employer/reset-password',
 };

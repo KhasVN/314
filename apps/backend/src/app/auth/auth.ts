@@ -17,5 +17,9 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      // In production replace this with a real email provider (Resend, Nodemailer, etc.)
+      console.log(`[Password Reset] Link for ${user.email}:\n${url}`);
+    },
   },
 });

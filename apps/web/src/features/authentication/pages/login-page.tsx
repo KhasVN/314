@@ -80,6 +80,14 @@ export function LoginPage({ config }: { config: LoginConfig }) {
                   setError('');
                 }}
               />
+              <div className="mt-1 text-right">
+                <Link
+                  href={config.forgotPasswordHref}
+                  className="text-xs font-semibold text-[#2557a7] underline-offset-2 hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
             </LinkedoutField>
 
             {error && (

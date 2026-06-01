@@ -212,6 +212,18 @@ export function EmployerHome() {
               New posting
             </LinkedoutButton>
           </LinkedoutCard>
+
+          <LinkedoutCard className="mt-4 p-5">
+            <h2 className="mb-3 text-sm font-bold text-[#2d2d2d]">Account</h2>
+            <LinkedoutButton
+              type="button"
+              variant="secondary"
+              className="w-full min-h-10 text-sm"
+              onClick={() => h.setShowChangePassword(true)}
+            >
+              Change password
+            </LinkedoutButton>
+          </LinkedoutCard>
         </aside>
 
         <section className="min-w-0 flex-1">
@@ -306,6 +318,11 @@ export function EmployerHome() {
         onDismissOverlay={h.closeDeleteModal}
         onCancel={h.closeDeleteModal}
         onConfirmDelete={h.handleDeleteJob}
+      />
+
+      <EmployerChangePasswordDialog
+        open={h.showChangePassword}
+        onClose={() => h.setShowChangePassword(false)}
       />
     </div>
   );
