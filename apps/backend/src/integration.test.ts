@@ -1,17 +1,3 @@
-/**
- * integration.test.ts
- * ─────────────────────────────────────────────────────────────────────────────
- * Integration tests — connect to the REAL database via the running backend.
- *
- * Every test is READ-ONLY. No data is created or deleted.
- * Safe to run against the production database.
- *
- * PREREQUISITE: Backend must be running → bun run dev:backend
- *
- * Run command:
- *   node node_modules/.bin/jest --config apps/backend/jest.integration.config.js --verbose
- * ─────────────────────────────────────────────────────────────────────────────
- */
 
 const BASE = 'http://localhost:4000/api';
 
@@ -24,7 +10,7 @@ async function get(path: string, params: Record<string, string> = {}) {
 
 describe('Integration Tests — Backend API (read-only, requires running backend)', () => {
 
-  // ── Health ──────────────────────────────────────────────────────────────────
+  // Health 
   describe('Health check', () => {
     it('GET /api returns 200', async () => {
       const { status } = await get('/');
@@ -32,7 +18,7 @@ describe('Integration Tests — Backend API (read-only, requires running backend
     });
   });
 
-  // ── Jobs ────────────────────────────────────────────────────────────────────
+  // Jobs
   describe('GET /jobs', () => {
     it('returns 200 and an array', async () => {
       const { status, body } = await get('/jobs');
@@ -55,7 +41,7 @@ describe('Integration Tests — Backend API (read-only, requires running backend
     });
   });
 
-  // ── Job search ──────────────────────────────────────────────────────────────
+  //Job search
   describe('GET /jobs/search', () => {
     it('returns 200 with a keyword query', async () => {
       const { status, body } = await get('/jobs/search', { query: 'engineer' });
@@ -93,7 +79,7 @@ describe('Integration Tests — Backend API (read-only, requires running backend
     });
   });
 
-  // ── Candidates ──────────────────────────────────────────────────────────────
+  //Candidates 
   describe('GET /candidates', () => {
     it('returns 200 and an array', async () => {
       const { status, body } = await get('/candidates');
@@ -110,7 +96,7 @@ describe('Integration Tests — Backend API (read-only, requires running backend
     });
   });
 
-  // ── Employers ───────────────────────────────────────────────────────────────
+  // Employers 
   describe('GET /employers', () => {
     it('returns 200 and an array', async () => {
       const { status, body } = await get('/employers');
@@ -119,7 +105,7 @@ describe('Integration Tests — Backend API (read-only, requires running backend
     });
   });
 
-  // ── Applications ────────────────────────────────────────────────────────────
+  // Applications
   describe('GET /applications', () => {
     it('returns 200 and an array', async () => {
       const { status, body } = await get('/applications');
@@ -136,7 +122,7 @@ describe('Integration Tests — Backend API (read-only, requires running backend
     });
   });
 
-  // ── Saved jobs ──────────────────────────────────────────────────────────────
+  //Saved jobs
   describe('GET /saved-jobs', () => {
     it('returns 200 and empty array for unknown candidateId', async () => {
       const { status, body } = await get('/saved-jobs', {
@@ -147,7 +133,7 @@ describe('Integration Tests — Backend API (read-only, requires running backend
     });
   });
 
-  // ── 404 handling ────────────────────────────────────────────────────────────
+  //404 handling
   describe('404 for unknown UUIDs', () => {
     it('GET /jobs/:id with unknown UUID returns 404', async () => {
       const { status } = await get('/jobs/00000000-0000-0000-0000-000000000000');
