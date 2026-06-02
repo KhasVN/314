@@ -200,9 +200,7 @@ export const jobApplicationsRelations = relations(
   }),
 );
 
-// ── saved_jobs ────────────────────────────────────────────────────────────────
-// Candidates can bookmark a job for later. Appears in My Jobs → Saved jobs tab.
-// The unique constraint prevents saving the same job twice.
+// saved_jobs
 export const savedJobs = pgTable(
   'saved_jobs',
   {
