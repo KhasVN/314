@@ -1,10 +1,4 @@
-/**
- * candidates.service.spec.ts — Unit tests for CandidatesService
- *
- * These tests run entirely in memory — no database, no network.
- * DatabaseService and AiService are replaced with Jest mock objects.
- * Tests verify the business logic of each method without any I/O.
- */
+
 import { NotFoundException } from '@nestjs/common';
 import { CandidatesService } from './candidates.service';
 
