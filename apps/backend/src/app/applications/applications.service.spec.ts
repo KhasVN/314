@@ -1,9 +1,4 @@
-/**
- * applications.service.spec.ts — Unit tests for ApplicationsService
- *
- * No database, no network. Tests business logic in isolation.
- * Covers create, findOne, update (all 4 status transitions), remove, findAll.
- */
+
 import { NotFoundException } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 
