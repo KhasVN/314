@@ -4,7 +4,6 @@ type Props = {
   job: JobDto | null;
   onApply: (job: JobDto) => void;
   onClose: () => void;
-  // Save job props — optional so pages that don't support saving still work
   onSave?: (job: JobDto) => void;
   isSaved?: boolean;
 };
