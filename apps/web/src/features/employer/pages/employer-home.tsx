@@ -9,10 +9,7 @@ import {
 import { EmployerCandidateCard } from '../components/employer-candidate-card';
 import { EmployerCandidateDrawer } from '../components/employer-candidate-drawer';
 import { EmployerDeleteJobDialog } from '../components/employer-delete-job-dialog';
-import { EmployerEditJobDialog } from '../components/employer-edit-job-dialog';
-import { EmployerEditProfileDialog } from '../components/employer-edit-profile-dialog';
 import { EmployerChangePasswordDialog } from '../components/employer-change-password-dialog';
-import { EmployerJobStatsCard } from '../components/employer-job-stats-card';
 import { useEmployerHome } from '../hooks/use-employer-home';
 import { useScrollReveal } from '@/lib/use-scroll-reveal';
 
@@ -208,22 +205,11 @@ export function EmployerHome() {
                 ))}
               </ul>
             )}
-            <LinkedoutButton href="/employer/job-posting" variant="secondary" className="w-full min-h-10 text-sm">
-              New posting
+            <LinkedoutButton href="/employer/manage-postings" variant="secondary" className="w-full min-h-10 text-sm">
+              Manage postings
             </LinkedoutButton>
           </LinkedoutCard>
 
-          <LinkedoutCard className="mt-4 p-5">
-            <h2 className="mb-3 text-sm font-bold text-[#2d2d2d]">Account</h2>
-            <LinkedoutButton
-              type="button"
-              variant="secondary"
-              className="w-full min-h-10 text-sm"
-              onClick={() => h.setShowChangePassword(true)}
-            >
-              Change password
-            </LinkedoutButton>
-          </LinkedoutCard>
         </aside>
 
         <section className="min-w-0 flex-1">
@@ -295,7 +281,7 @@ export function EmployerHome() {
                 <EmployerCandidateCard
                   key={candidate.id}
                   candidate={candidate}
-                  rank={h.activeTab === 'recommended' ? index + 1 : undefined}
+                  rank={h.activeTab === 'recommesnded' ? index + 1 : undefined}
                   isSelected={h.selectedCandidate?.id === candidate.id}
                   onClick={() =>
                     h.setSelectedCandidate(h.selectedCandidate?.id === candidate.id ? null : candidate)

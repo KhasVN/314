@@ -7,7 +7,8 @@ function navState(pathname: string | null): { variant: 'candidate' | 'employer';
   const p = pathname ?? '';
   if (p.startsWith('/employer')) {
     if (p === '/employer' || p === '/employer/') return { variant: 'employer', activePage: 'home' };
-    if (p.includes('/job-posting')) return { variant: 'employer', activePage: 'post' };
+    if (p.includes('/job-posting') || p.includes('/manage-postings')) return { variant: 'employer', activePage: 'post' };
+    if (p.includes('/settings')) return { variant: 'employer', activePage: 'settings' };
     return { variant: 'employer', activePage: 'other' };
   }
   if (p.startsWith('/home')) return { variant: 'candidate', activePage: 'other' };

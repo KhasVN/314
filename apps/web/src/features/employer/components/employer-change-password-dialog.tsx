@@ -92,7 +92,7 @@ export function EmployerChangePasswordDialog({
     if (newPassword.length < 8) return setError('New password must be at least 8 characters.');
     if (newPassword !== confirmPassword) return setError('Passwords do not match.');
 
-    // ── API CALL ─────────────────────────────────────────
+    // API CALL 
     // All validation passed — now actually change the password.
 
     setLoading(true); // show "Saving…" on the button

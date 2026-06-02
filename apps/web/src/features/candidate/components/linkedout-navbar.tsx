@@ -41,7 +41,7 @@ export function LinkedoutNavbar({ variant, activePage = 'other' }: Props) {
   const accountLabel =
     variant === 'employer'
       ? session?.user
-        ? employer?.companyName?.trim() || (session.user as { name?: string }).name || 'Account'
+        ? 'Menu'
         : 'Sign in'
       : session?.user && profile?.fullName
         ? profile.fullName
@@ -161,6 +161,9 @@ export function LinkedoutNavbar({ variant, activePage = 'other' }: Props) {
                   </li>
                   <li>
                     <Link href="/employer/job-posting">New posting</Link>
+                  </li>
+                  <li>
+                    <Link href="/employer/settings">Settings</Link>
                   </li>
                   <li>
                     <button type="button" onClick={signOut}>
