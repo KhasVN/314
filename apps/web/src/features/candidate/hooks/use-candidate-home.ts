@@ -13,7 +13,10 @@ export function useCandidateHome() {
   const [applicationNotice, setApplicationNotice] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'recommended'>('all');
 
-  const { data: allJobs = [], isLoading: loadingAll } = useSWR('candidate-all-jobs', candidateApi.jobs.list);
+  const { data: allJobs = [], isLoading: loadingAll } = useSWR(
+    'candidate-all-jobs',
+    candidateApi.jobs.list,
+  );
 
   const { data: searchResults, isLoading: loadingSearch } = useSWR(
     searchParams ? ['cand-job-search', searchParams] : null,
@@ -21,7 +24,9 @@ export function useCandidateHome() {
   );
 
   const { data: recommendedJobs = [], isLoading: loadingRecs } = useSWR(
-    activeTab === 'recommended' && profile?.id ? ['cand-recommendations', profile.id, profile.isMember] : null,
+    activeTab === 'recommended' && profile?.id
+      ? ['cand-recommendations', profile.id, profile.isMember]
+      : null,
     () =>
       candidateApi.jobs.search({
         candidateId: profile!.id,
@@ -30,10 +35,51 @@ export function useCandidateHome() {
       }),
   );
 
-  const displayJobs: JobDto[] =
-    activeTab === 'recommended' ? recommendedJobs : searchParams ? (searchResults ?? []) : allJobs;
+  // ── Saved jobs ─────────────────────────────────────────────────────────────
+  // Fetches the list of saved job records for the logged-in candidate.
+  // savedJobIds is a Set<jobId> used to show the correct Saved/Save button state.
+  const { data: savedRecords = [], mutate: mutateSaved } = useSWR(
+    profile?.id ? ['saved-jobs', profile.id] : null,
+    () => candidateApi.savedJobs.list(profile!.id),
+  );
+  const savedJobIds = new Set(savedRecords.map((r) => r.jobId));
 
-  const isLoading = activeTab === 'recommended' ? loadingRecs : searchParams ? loadingSearch : loadingAll;
+  const saveJob = async (job: JobDto) => {
+    if (!profile?.id) {
+      window.location.href = '/candidate/login';
+      return;
+    }
+    const existing = savedRecords.find((r) => r.jobId === job.id);
+    if (existing) {
+      // Already saved → unsave it
+      await candidateApi.savedJobs.remove(existing.id);
+      showNotice(`Removed "${job.title}" from saved jobs`);
+    } else {
+      // Not saved yet → save it
+      await candidateApi.savedJobs.save(profile.id, job.id);
+      showNotice(`"${job.title}" saved to My Jobs`);
+    }
+    await mutateSaved();
+  };
+
+  const displayJobs: JobDto[] =
+    activeTab === 'recommended'
+      ? recommendedJobs
+      : searchParams
+        ? (searchResults ?? [])
+        : allJobs;
+
+  const isLoading =
+    activeTab === 'recommended'
+      ? loadingRecs
+      : searchParams
+        ? loadingSearch
+        : loadingAll;
+
+  const showNotice = (msg: string) => {
+    setApplicationNotice(msg);
+    window.setTimeout(() => setApplicationNotice(''), 4000);
+  };
 
   const handleSearch = (params: JobSearchQueryDto | null) => {
     setSelectedJob(null);
@@ -94,11 +140,10 @@ export function useCandidateHome() {
         jobId: job.id,
         status: 'submitted',
       });
-      setApplicationNotice(`Applied to ${job.title}`);
+      showNotice(`Applied to ${job.title}`);
     } catch {
-      setApplicationNotice('You may have already applied to this job.');
+      showNotice('You may have already applied to this job.');
     }
-    window.setTimeout(() => setApplicationNotice(''), 4000);
   };
 
   return {
@@ -114,5 +159,7 @@ export function useCandidateHome() {
     handleSearch,
     handleClear,
     applyForJob,
+    saveJob,
+    savedJobIds,
   };
 }

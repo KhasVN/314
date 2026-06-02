@@ -126,6 +126,8 @@ export function CandidateHome() {
           <JobDetailDrawer
             job={h.selectedJob ?? h.displayJobs[0] ?? null}
             onApply={h.applyForJob}
+            onSave={h.saveJob}
+            isSaved={h.selectedJob ? h.savedJobIds.has(h.selectedJob.id) : false}
             onClose={() => h.setSelectedJob(null)}
           />
         </div>

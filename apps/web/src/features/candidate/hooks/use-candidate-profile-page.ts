@@ -35,6 +35,7 @@ export function useCandidateProfilePage() {
 
   return {
     candidate,
+    mutate,
     resumeText,
     setResumeText,
     savingResume,

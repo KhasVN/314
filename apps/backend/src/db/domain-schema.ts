@@ -10,6 +10,7 @@ import {
   uuid,
   vector,
 } from 'drizzle-orm/pg-core';
+import { randomUUID } from 'node:crypto';
 import { user } from './auth-schema';
 
 export const educationLevel = pgEnum('education_level', [
@@ -198,3 +199,33 @@ export const jobApplicationsRelations = relations(
     }),
   }),
 );
+
+// ── saved_jobs ────────────────────────────────────────────────────────────────
+// Candidates can bookmark a job for later. Appears in My Jobs → Saved jobs tab.
+// The unique constraint prevents saving the same job twice.
+export const savedJobs = pgTable(
+  'saved_jobs',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    candidateId: uuid('candidate_id')
+      .notNull()
+      .references(() => candidateProfiles.id, { onDelete: 'cascade' }),
+    jobId: uuid('job_id')
+      .notNull()
+      .references(() => jobPostings.id, { onDelete: 'cascade' }),
+  },
+  (table) => [
+    uniqueIndex('saved_jobs_candidate_job_unique').on(table.candidateId, table.jobId),
+  ],
+);
+
+export const savedJobsRelations = relations(savedJobs, ({ one }) => ({
+  candidate: one(candidateProfiles, {
+    fields: [savedJobs.candidateId],
+    references: [candidateProfiles.id],
+  }),
+  job: one(jobPostings, {
+    fields: [savedJobs.jobId],
+    references: [jobPostings.id],
+  }),
+}));

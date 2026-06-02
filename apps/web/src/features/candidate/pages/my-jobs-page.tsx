@@ -7,7 +7,7 @@ import { LinkedoutButton, LinkedoutCard } from '@features/candidate/components/l
 import { authClient } from '@lib/auth-client';
 import type { JobDto, ApplicationDto } from '@talent-matching/dtos';
 
-type Tab = 'applied' | 'interviews' | 'archived';
+type Tab = 'applied' | 'interviews' | 'archived' | 'saved';
 
 export function MyJobsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('applied');
@@ -76,10 +76,40 @@ export function MyJobsPage() {
     window.setTimeout(() => setToast(''), 4000);
   };
 
+  // ── Saved jobs ───────────────────────────────────────────────────────────
+  // Fetches all saved job records for the candidate, then loads full job details
+  // for each one so we can show title, location, company etc. in the UI.
+  const { data: savedData = [], mutate: mutateSaved } = useSWR(
+    candidateId ? ['saved-jobs', candidateId] : null,
+    async () => {
+      // Catch errors gracefully — if the saved_jobs table doesn't exist yet
+      // (migration not run), return empty array instead of crashing.
+      const records = await candidateApi.savedJobs.list(candidateId!).catch(() => []);
+      if (records.length === 0) return [];
+      const jobs: Record<string, JobDto> = {};
+      await Promise.all(
+        records.map(async (r) => {
+          const job = await candidateApi.jobs.get(r.jobId).catch(() => undefined);
+          if (job) jobs[r.jobId] = job;
+        }),
+      );
+      return records
+        .map((r) => ({ record: r, job: jobs[r.jobId] }))
+        .filter((item) => item.record != null);
+    },
+  );
+
+  const unsaveJob = async (recordId: string, jobTitle: string) => {
+    await candidateApi.savedJobs.remove(recordId);
+    await mutateSaved();
+    showToast(`Removed "${jobTitle}" from saved jobs`);
+  };
+
   const tabs: { key: Tab; label: string; count: number }[] = [
-    { key: 'applied', label: 'Applied', count: appliedApps.length },
+    { key: 'applied',    label: 'Applied',    count: appliedApps.length },
     { key: 'interviews', label: 'Interviews', count: interviewApps.length },
-    { key: 'archived', label: 'Archived', count: archivedApps.length },
+    { key: 'archived',   label: 'Archived',   count: archivedApps.length },
+    { key: 'saved',      label: 'Saved jobs', count: savedData.length },
   ];
 
   const signedOut = !session?.user;
@@ -140,7 +170,7 @@ export function MyJobsPage() {
           <>
             <div
               role="tablist"
-              className="squircle-card mb-6 grid w-full grid-cols-3 overflow-hidden border-[#d4d2d0] bg-white p-1"
+              className="squircle-card mb-6 grid w-full grid-cols-4 overflow-hidden border-[#d4d2d0] bg-white p-1"
             >
               {tabs.map((t) => (
                 <button
@@ -217,6 +247,45 @@ export function MyJobsPage() {
                         />
                       );
                     })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!appsLoading && activeTab === 'saved' && (
+              <div>
+                {savedData.length === 0 ? (
+                  <EmptyState
+                    icon="🔖"
+                    title="No saved jobs yet"
+                    desc="Click Save on any job listing to bookmark it for later."
+                  />
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {savedData.map(({ record, job }) => (
+                      <LinkedoutCard key={record.id} className="p-5">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                          <div className="min-w-0 flex-1">
+                            <p className="mb-1 truncate text-xs text-[#767676]">{job?.companyInfo ?? 'Company'}</p>
+                            <h3 className="text-base font-bold text-[#2d2d2d]">{job?.title ?? 'Job unavailable'}</h3>
+                            {job?.location && <p className="mt-1 text-sm text-[#595959]">📍 {job.location}</p>}
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {job?.workMode && <WorkModeBadge mode={job.workMode} />}
+                            </div>
+                          </div>
+                          <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col">
+                            <LinkedoutButton
+                              type="button"
+                              variant="secondary"
+                              className="min-h-9 px-4 text-xs"
+                              onClick={() => unsaveJob(record.id, job?.title ?? 'job')}
+                            >
+                              Remove
+                            </LinkedoutButton>
+                          </div>
+                        </div>
+                      </LinkedoutCard>
+                    ))}
                   </div>
                 )}
               </div>

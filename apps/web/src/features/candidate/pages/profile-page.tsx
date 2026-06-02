@@ -23,6 +23,7 @@ export function ProfilePage() {
             onSaveResume={p.saveResume}
             onBeginEditResume={p.beginEditResume}
             onResumeFile={p.handleResumeFile}
+            onProfileUpdated={p.mutate}
           />
         )}
       </main>

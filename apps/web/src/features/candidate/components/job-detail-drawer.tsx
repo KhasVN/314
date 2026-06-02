@@ -4,9 +4,12 @@ type Props = {
   job: JobDto | null;
   onApply: (job: JobDto) => void;
   onClose: () => void;
+  // Save job props — optional so pages that don't support saving still work
+  onSave?: (job: JobDto) => void;
+  isSaved?: boolean;
 };
 
-export function JobDetailDrawer({ job, onApply, onClose }: Props) {
+export function JobDetailDrawer({ job, onApply, onClose, onSave, isSaved }: Props) {
   if (!job) {
     return (
       <aside className="hidden min-w-0 flex-1 min-[920px]:block">
@@ -23,6 +26,7 @@ export function JobDetailDrawer({ job, onApply, onClose }: Props) {
         className="squircle sticky top-24 border border-[#d4d2d0] bg-white"
         style={{ maxHeight: 'calc(100vh - 7rem)' }}
       >
+        {/* ── Header ───────────────────────────────────────────────────────── */}
         <div className="border-b border-[#d4d2d0] p-6">
           <div className="mb-3 flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
@@ -40,15 +44,33 @@ export function JobDetailDrawer({ job, onApply, onClose }: Props) {
               </svg>
             </button>
           </div>
-          <button
-            type="button"
-            onClick={() => onApply(job)}
-            className="squircle-button bg-[#2557a7] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#164081]"
-          >
-            Apply
-          </button>
+
+          {/* Apply + Save buttons side by side */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => onApply(job)}
+              className="squircle-button bg-[#2557a7] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#164081]"
+            >
+              Apply
+            </button>
+            {onSave && (
+              <button
+                type="button"
+                onClick={() => onSave(job)}
+                className={`squircle-button border px-5 py-3 text-sm font-bold transition-colors ${
+                  isSaved
+                    ? 'border-[#2557a7] bg-[#eef4ff] text-[#2557a7]'
+                    : 'border-[#d4d2d0] bg-white text-[#2d2d2d] hover:bg-[#f3f2f1]'
+                }`}
+              >
+                {isSaved ? '✓ Saved' : 'Save'}
+              </button>
+            )}
+          </div>
         </div>
 
+        {/* ── Body ─────────────────────────────────────────────────────────── */}
         <div className="space-y-6 overflow-y-auto p-6" style={{ maxHeight: 'calc(100vh - 18rem)' }}>
           <div className="flex flex-wrap gap-2">
             {job.workMode && <InfoBadge icon="💼" label={job.workMode.replace('_', '-')} color="blue" />}
@@ -101,13 +123,29 @@ export function JobDetailDrawer({ job, onApply, onClose }: Props) {
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={() => onApply(job)}
-            className="squircle-button w-full bg-[#2557a7] py-3 text-sm font-bold text-white transition-colors hover:bg-[#164081]"
-          >
-            Apply
-          </button>
+          {/* Bottom action buttons */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => onApply(job)}
+              className="squircle-button flex-1 bg-[#2557a7] py-3 text-sm font-bold text-white transition-colors hover:bg-[#164081]"
+            >
+              Apply
+            </button>
+            {onSave && (
+              <button
+                type="button"
+                onClick={() => onSave(job)}
+                className={`squircle-button border px-5 py-3 text-sm font-bold transition-colors ${
+                  isSaved
+                    ? 'border-[#2557a7] bg-[#eef4ff] text-[#2557a7]'
+                    : 'border-[#d4d2d0] bg-white text-[#2d2d2d] hover:bg-[#f3f2f1]'
+                }`}
+              >
+                {isSaved ? '✓ Saved' : 'Save job'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </aside>
@@ -136,10 +174,10 @@ function InfoBadge({
   color: 'blue' | 'purple' | 'green' | 'gold';
 }) {
   const map = {
-    blue: { bg: '#eef4ff', text: '#2557a7' },
+    blue:   { bg: '#eef4ff', text: '#2557a7' },
     purple: { bg: '#f3f2f1', text: '#595959' },
-    green: { bg: '#e4f7e6', text: '#057642' },
-    gold: { bg: '#fff8e6', text: '#7c5a00' },
+    green:  { bg: '#e4f7e6', text: '#057642' },
+    gold:   { bg: '#fff8e6', text: '#7c5a00' },
   };
   const { bg, text } = map[color];
   return (
