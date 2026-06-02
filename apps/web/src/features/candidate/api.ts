@@ -29,9 +29,7 @@ export const candidateApi = {
       patchJson<ApplicationDto>(`/applications/${id}`, data),
     remove: (id: string) => deleteJson<ApplicationDto>(`/applications/${id}`),
   },
-  // ── savedJobs ─────────────────────────────────────────────────────────────
-  // Endpoints for the saved_jobs table: bookmark a job for later.
-  // Saved jobs appear in My Jobs → Saved jobs tab.
+  // savedJobs
   savedJobs: {
     list: (candidateId: string) =>
       getJson<{ id: string; candidateId: string; jobId: string }[]>('/saved-jobs', {
