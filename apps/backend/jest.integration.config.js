@@ -5,8 +5,14 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
-  testMatch: ['**/*.integration.test.ts', '**/integration.test.ts'],
-  testTimeout: 15000, 
+  // Match both integration.test.ts AND system.test.ts
+  testMatch: [
+    '**/integration.test.ts',
+    '**/system.test.ts',
+    '**/*.integration.test.ts',
+    '**/*.system.test.ts',
+  ],
+  testTimeout: 15000,
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
       tsconfig: {
