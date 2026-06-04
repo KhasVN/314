@@ -1,0 +1,48 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/backend/**'
+      - 'libs/shared/**'
+      - 'package.json'
+      - 'bun.lock'
+      - 'package-lock.json'
+      - '.github/workflows/backend-ci.yml'
+  workflow_dispatch:
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.13
+
+      - name: Install dependencies
+        working-directory: ./
+        run: bun install --frozen-lockfile
+
+      - name: Run unit tests
+        run: bunx jest --config jest.config.js
+
+      - name: Trigger Dokploy backend deploy webhook
+        if: success()
+        env:
+          WEBHOOK_URL: ${{ secrets.DOKPLOY_BE_WEBHOOK }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "::warning::DOKPLOY_BE_WEBHOOK secret is not set; skipping deploy trigger."
+            exit 0
+          fi
+          echo "Triggering Dokploy backend deploy webhook..."
+          curl -fsS -X POST "$WEBHOOK_URL"
+          echo "Backend deploy webhook triggered."
