@@ -11,6 +11,7 @@ import {
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import {
   candidateSearchQuerySchema,
@@ -25,6 +26,7 @@ import { UpdateCandidateDto } from './dto/update-candidate.dto';
 import { updateCandidateSchema } from './dto/update-candidate.dto';
 
 @Controller('candidates')
+@ApiTags('candidates')
 export class CandidatesController {
   constructor(private readonly candidatesService: CandidatesService) {}
 

@@ -1,7 +1,9 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { SavedJobsService } from './saved-jobs.service';
 
 @Controller('saved-jobs')
+@ApiTags('saved-jobs')
 export class SavedJobsController {
   constructor(private readonly savedJobsService: SavedJobsService) {}
 

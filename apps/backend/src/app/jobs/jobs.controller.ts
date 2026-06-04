@@ -9,6 +9,7 @@ import {
   Query,
   ParseUUIDPipe,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import {
   createJobSchema,
   jobSearchQuerySchema,
@@ -21,6 +22,7 @@ import { UpdateJobDto } from './dto/update-job.dto';
 import { updateJobSchema } from './dto/update-job.dto';
 
 @Controller('jobs')
+@ApiTags('jobs')
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 

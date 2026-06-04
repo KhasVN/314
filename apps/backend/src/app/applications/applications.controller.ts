@@ -9,6 +9,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { createApplicationSchema } from '@talent-matching/dtos';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { ApplicationsService } from './applications.service';
@@ -17,6 +18,7 @@ import { updateApplicationSchema } from './dto/update-application.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
 
 @Controller('applications')
+@ApiTags('applications')
 export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
 

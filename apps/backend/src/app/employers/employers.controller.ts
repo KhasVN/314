@@ -11,6 +11,7 @@ import {
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { createEmployerSchema } from '@talent-matching/dtos';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
@@ -21,6 +22,7 @@ import { UpdateEmployerDto } from './dto/update-employer.dto';
 import { updateEmployerSchema } from './dto/update-employer.dto';
 
 @Controller('employers')
+@ApiTags('employers')
 export class EmployersController {
   constructor(private readonly employersService: EmployersService) {}
 

@@ -281,7 +281,7 @@ export function EmployerHome() {
                 <EmployerCandidateCard
                   key={candidate.id}
                   candidate={candidate}
-                  rank={h.activeTab === 'recommesnded' ? index + 1 : undefined}
+                  rank={h.activeTab === 'recommended' ? index + 1 : undefined}
                   isSelected={h.selectedCandidate?.id === candidate.id}
                   onClick={() =>
                     h.setSelectedCandidate(h.selectedCandidate?.id === candidate.id ? null : candidate)

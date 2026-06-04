@@ -23,7 +23,7 @@ export function ForgotPasswordPage({ config }: { config: LoginConfig }) {
     setLoading(true);
     setError('');
     try {
-      const result = await authClient.forgetPassword({
+      const result = await authClient.requestPasswordReset({
         email: email.trim().toLowerCase(),
         redirectTo: config.resetPasswordRedirectTo,
       });
