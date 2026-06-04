@@ -9,19 +9,10 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-# Only the manifests + the workspace sources we need to resolve the
-# workspace graph. The backend workspace is intentionally excluded
-# from the install.
 COPY package.json bun.lock ./
-COPY apps/web/package.json ./apps/web/package.json
-COPY libs/shared/dtos/package.json ./libs/shared/dtos/package.json
-
-RUN bun install --filter='@talent-matching/web' \
-                --filter='@talent-matching/dtos' \
-                --frozen-lockfile
+RUN bun install --frozen-lockfile
 
 COPY . .
-
 RUN test -n "$NEXT_PUBLIC_API_URL" && test -n "$NEXT_PUBLIC_AUTH_URL"
 RUN bun run --cwd apps/web build
 
