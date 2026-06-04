@@ -29,7 +29,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Run unit tests
         run: bunx jest --config jest.config.js

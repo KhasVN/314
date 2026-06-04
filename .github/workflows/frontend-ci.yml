@@ -30,10 +30,10 @@ jobs:
 
       - name: Install root dependencies
         working-directory: ./
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Install web dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Build Next.js (typecheck + lint via Next build)
         env:
