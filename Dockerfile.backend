@@ -2,10 +2,25 @@ FROM oven/bun:1.3.13 AS builder
 
 WORKDIR /app
 
+# Only the manifests + the backend/shared-lib sources we need to resolve
+# the workspace graph. This avoids copying the entire repo before install.
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+COPY apps/web/package.json ./apps/web/package.json
+COPY libs/shared/dtos/package.json ./libs/shared/dtos/package.json
 
-COPY . .
+# Scope the install to the backend workspace and its workspace deps
+# (the @talent-matching/dtos shared lib). The frontend workspace is
+# intentionally excluded so we don't pull next/react and their native
+# bindings onto the builder image.
+RUN bun install --filter='@talent-matching/source' \
+                --filter='@talent-matching/dtos' \
+                --frozen-lockfile
+
+COPY apps/backend ./apps/backend
+COPY libs ./libs
+COPY tsconfig.base.json ./
+COPY nx.json ./
+
 RUN bunx nx build backend --configuration=production
 
 FROM node:25.9.0-bookworm AS runner
