@@ -7,9 +7,8 @@
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "webpack-cli build",
-        "args": ["--node-env=production"],
-        "cwd": "apps/backend"
+        "command": "cd apps/backend && webpack-cli build --config webpack.config.js",
+        "args": ["--node-env=production"]
       },
       "configurations": {
         "development": {

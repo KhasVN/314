@@ -16,8 +16,8 @@ import {
   employerSchema,
   jobSchema,
   jobSearchQuerySchema,
-  jobStatusSchema,
   workModeSchema,
+  jobStatusSchema,
 } from '@talent-matching/dtos';
 
 extendZodWithOpenApi(z);
